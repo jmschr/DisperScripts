@@ -3,7 +3,7 @@ from time import sleep
 from dispertech.models.experiment.nanoparticle_tracking.np_tracking import NPTracking
 
 
-experiment = NPTracking('dispertech.yml')
+experiment = NPTracking('../Dispertech/examples/dispertech.yml')
 experiment.load_cameras()
 experiment.load_electronics()
 

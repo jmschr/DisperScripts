@@ -7,7 +7,7 @@ from experimentor.lib.log import log_to_screen, get_logger
 
 logger = get_logger()
 handler = log_to_screen()
-experiment = NPTracking('dispertech.yml')
+experiment = NPTracking('../Dispertech/examples/dispertech.yml')
 experiment.load_cameras()
 experiment.load_electronics()
 app = QApplication([])

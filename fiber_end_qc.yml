@@ -4,6 +4,12 @@ info:
   description: "After UV"
   filename: fiber_end_{cartridge_number}_{i}.npy
 
+mirror:
+  speed: 1
+
+laser:
+  power: 20
+
 camera:
   model: basler # Should be a python file in model/cameras
   init: daA1280 # Initial arguments to pass when creating the camera
