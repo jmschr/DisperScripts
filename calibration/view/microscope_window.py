@@ -3,7 +3,7 @@ import os
 from PyQt5 import uic
 from PyQt5.QtWidgets import QMainWindow
 
-from dispertech.view import BASE_DIR_VIEW
+from calibration_setup.view import BASE_DIR_VIEW
 
 
 class MicroscopeWindow(QMainWindow):
@@ -20,6 +20,10 @@ class MicroscopeWindow(QMainWindow):
         self.motor_speed_line.setText(self.experiment.config['mirror']['speed'])
         self.power_slider.setValue(self.experiment.config['laser']['power'])
         self.lcd_laser_power.display(self.experiment.config['laser']['power'])
+        self.camera_exposure_line.setText(self.experiment.config['camera_microscope']['exposure_time'])
+        self.camera_gain_line.setText(self.experiment.config['camera_microscope']['gain'])
+
+
 
 
 if __name__ == '__main__':
