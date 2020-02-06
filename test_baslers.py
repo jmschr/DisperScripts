@@ -5,8 +5,8 @@ from time import sleep
 
 import numpy as np
 
-from dispertech.models.cameras.basler import Camera
-from dispertech.models.experiment.nanoparticle_tracking.saver import VideoSaver
+from calibration_setup.models.cameras.basler import Camera
+from calibration_setup.models.experiment.nanoparticle_tracking.saver import VideoSaver
 from experimentor import Q_
 from experimentor.lib.log import get_logger, log_to_screen
 from experimentor.models.experiments.base_experiment import BaseExperiment

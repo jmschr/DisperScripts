@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QApplication
 
-from dispertech.models.experiment.nanoparticle_tracking.np_tracking import NPTracking
-from dispertech.view.focusing_window import FocusingWindow
+from calibration_setup.models.experiment.nanoparticle_tracking.np_tracking import NPTracking
+from calibration_setup.view.focusing_window import FocusingWindow
 from experimentor.lib.log import log_to_screen, get_logger
 
 

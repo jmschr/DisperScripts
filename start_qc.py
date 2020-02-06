@@ -5,7 +5,6 @@ from multiprocessing.spawn import freeze_support
 
 import logging
 import os
-from time import sleep
 
 from dispertech.models.experiment.fiber_end_qc.fiber_end_qc import FiberEndQualityControl
 from dispertech.view.fibre_end_qc import FiberEndWindow

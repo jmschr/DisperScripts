@@ -8,7 +8,7 @@ from time import sleep
 from pypylon import pylon
 
 from experimentor import Q_
-from dispertech.models.cameras.basler import Camera
+from calibration_setup.models.cameras.basler import Camera
 
 
 cam1 = Camera('ac')

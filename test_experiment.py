@@ -1,6 +1,6 @@
 from time import sleep
 
-from dispertech.models.experiment.nanoparticle_tracking.np_tracking import NPTracking
+from calibration_setup.models.experiment.nanoparticle_tracking.np_tracking import NPTracking
 
 
 experiment = NPTracking('../Dispertech/examples/dispertech.yml')

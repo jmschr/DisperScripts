@@ -11,6 +11,21 @@ arduino:
 
 servo: # This is a temp fix to control the servo with a different Arduino
   device: 1
+  status: 0  # 0: Off, 1: On
+
+laser:
+  power: 20
+
+mirror:
+  speed: 1
+
+info:
+  folder: "D:\\Data\\Dispertech"
+  cartridge_number: 1900000
+  description: "After UV"
+  filename_fiber: fiber_end_{cartridge_number}_{i}.npy
+  filename_laser: laser_position_{cartridge_number}_{i}.npy
+  filename_microscope: microscope_{cartridge_number}_{i}.npy
 
 saving:
   auto_save: False
@@ -50,6 +65,7 @@ camera_microscope:
   #extra_args: [extra, arguments] # Extra arguments that can be passed when constructing the model
   model_camera: ACE # To keep a registry of which camera was used in the experiment
   exposure_time: 30ms # Initial exposure time (in ms)
+  gain: 0
   fps: 30  # Frames per second, should either be defined by the camera or within the model based on timing
   binning_x: 1 # Binning
   binning_y: 1
@@ -59,11 +75,6 @@ camera_microscope:
   roi_y2: 1200
   background: '' # Full path to background file, or empty for none.
   background_method: [Method1, Method2]
-
-mirror:
-  model: mechonics # Should be a Python file in model/motors
-  init: 0  # Initial arguments
-
 
 waterfall: # Parameters for calculating the waterfall plot
   length: 20  # The total length of the waterfall (lines)
