@@ -27,6 +27,9 @@ info:
   filename_laser: laser_position_{cartridge_number}_{i}.npy
   filename_microscope: microscope_{cartridge_number}_{i}.npy
 
+centroid:
+  laser_power: 30  # This is the laser power that will be used in order to be consistent with centroid extraction
+
 saving:
   auto_save: False
   auto_save_waterfall: True

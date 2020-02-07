@@ -102,29 +102,45 @@ class CalibrationSetup(Experiment):
     def stop_free_run(self, camera: str):
         """ Stops the free run of the camera.
 
-        :param str camera: must be the same as specified in the config file, for example 'camera_microscope'
+        :param camera: must be the same as specified in the config file, for example 'camera_microscope'
         """
         self.logger.info(f'Stopping the free run of {camera}')
         self.cameras[camera].stop_free_run()
 
-    def save_fiber_data(self):
-        """Saves the fiber core data using the information available in the config (filename, folder, cartridge).
-        """
+    def prepare_folder(self) -> str:
+        """Creates the folder with the proper date, using the base directory given in the config file"""
         base_folder = self.config['info']['folder']
         today_folder = f'{datetime.today():%Y-%m-%d}'
         folder = os.path.join(base_folder, today_folder)
         if not os.path.isdir(folder):
             os.makedirs(folder)
+        return folder
 
+    def get_filename(self, base_filename: str) -> str:
+        """Checks if the given filename exists in the given folder and increments a counter until the first non-used
+        filename is available.
+
+        :param base_filename: must have two placeholders {cartridge_number} and {i}
+        :returns: full path to the file where to save the data
+        """
+        folder = self.prepare_folder()
         i = 0
         cartridge_number = self.config['info']['cartridge_number']
-        base_filename = self.config['info']['filename_fiber']
         while os.path.isfile(os.path.join(folder, base_filename.format(
                 cartrdige_number=cartridge_number,
                 i=i))):
             i += 1
 
-        filename = os.path.join(folder, base_filename.format(cartridge_number=cartridge_number, i=i))
+        return os.path.join(folder, base_filename.format(cartridge_number=cartridge_number, i=i))
+
+    def save_image_fiber_camera(self, filename: str) -> None:
+        """ Saves the image being registered by the camera looking at the fiber-end. Does not alter the configuration
+        of the camera, therefore what you see is what you get.
+
+        :param filename: it assumes it has a placeholder for {cartridge_number} and {i} in order not to over write
+                            files
+        """
+        filename = self.get_filename(filename)
 
         t0 = time.time()
         temp_image = self.cameras['camera_fiber'].temp_image
@@ -135,4 +151,44 @@ class CalibrationSetup(Experiment):
         np.save(filename, temp_image)
         self.logger.info(f'Saved fiber data to {filename}')
 
-    def save
+    def save_image_microscope_camera(self, filename: str) -> None:
+        """Saves the image shown on the microscope camera to the given filename.
+
+        :param str filename: Must be a string containing two placeholders: {cartrdige_number}, {i}
+        """
+        filename = self.get_filename(filename)
+        t0 = time.time()
+        temp_image = self.cameras['camera_microscope'].temp_image
+        while temp_image is None:
+            temp_image = self.cameras['camera_fiber'].temp_image
+            if time.time() - t0 > 10:
+                raise CameraTimeout("It took too long to get a new frame from the microscope")
+        np.save(filename, temp_image)
+        self.logger.info(f"Saved microscope data to {filename}")
+
+    def save_fiber_core(self):
+        """Saves the image of the fiber core.
+
+        .. TODO:: This method was designed in order to allow extra work to be done, for example, be sure
+            the LED is ON, or use different exposure times.
+        """
+        self.save_image_fiber_camera(self.config['info']['filename_fiber'])
+
+    def save_laser_position(self):
+        """ Saves an image of the laser on the camera.
+
+        .. TODO:: Having a separate method just to save the laser position is useful when wanting to automatize
+            tasks, for example using several laser powers to check proper centroid extraction.
+        """
+        current_laser_power = self.config['laser']['power']
+        self.set_laser_power(self.config['centroid']['laser_power'])
+        self.save_image_fiber_camera(self.config['info']['filename_laser'])
+        self.set_laser_power(current_laser_power)
+
+    def save_particles_image(self):
+        """ Saves the image shown on the microscope. This is only to keep as a reference. This method wraps the
+        actual method `meth:save_iamge_microscope_camera` in case there is a need to set parameters before saving. Or
+        if there are going to be different saving options (for example, low and high laser powers, etc.).
+        """
+        base_filename = self.config['info']['filename_microscope']
+        self.save_image_microscope_camera(base_filename)

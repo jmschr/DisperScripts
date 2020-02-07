@@ -23,7 +23,10 @@ class MicroscopeWindow(QMainWindow):
         self.camera_exposure_line.setText(self.experiment.config['camera_microscope']['exposure_time'])
         self.camera_gain_line.setText(self.experiment.config['camera_microscope']['gain'])
 
-
+    def update_experiment(self):
+        self.experiment.config.update({
+            ''
+        })
 
 
 if __name__ == '__main__':
