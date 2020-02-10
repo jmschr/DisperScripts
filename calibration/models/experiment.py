@@ -6,6 +6,7 @@ from datetime import datetime
 
 from dispertech.models.cameras.basler import Camera
 from dispertech.models.electronics.arduino import ArduinoModel
+from experimentor import Q_
 from experimentor.models.cameras.exceptions import CameraTimeout
 from experimentor.models.decorators import make_async_thread
 from experimentor.models.experiments.base_experiment import Experiment
@@ -25,6 +26,11 @@ class CalibrationSetup(Experiment):
             'servo': None,
         }
 
+    def load_configuration(self, filename):
+        super(CalibrationSetup, self).load_configuration(filename)
+        self.config['camera_microscope']['exposure_time'] = Q_(self.config['camera_microscope']['exposure_time'])
+        self.config['camera_fiber']['exposure_time'] = Q_(self.config['camera_fiber']['exposure_time'])
+
     def initialize_cameras(self):
         """Assume a specific setup working with baslers and initialize both cameras"""
         self.logger.info('Initializing cameras')
@@ -38,20 +44,28 @@ class CalibrationSetup(Experiment):
             self.logger.info(f'Initializing {cam}')
             self.cameras[cam].initialize()
             self.logger.debug(f'Configuring {cam} with {self.config[cam]}')
-            self.cameras[cam].config(self.config[cam])
+            self.cameras[cam].configure(self.config[cam])
+            self.cameras[cam].set_auto_exposure('Off')
+            self.cameras[cam].set_auto_gain('Off')
 
     def initialize_electronics(self):
         """Assumes there are two arduinos connected, one to control a Servo and another to control the rest.
         TODO:: This will change in the future, when electronics are made on a single board.
         """
 
-        self.electronics['arduino'] = ArduinoModel(**self.config['arduino'])
-        self.electronics['servo'] = ArduinoModel(**self.config['servo'])
+        self.electronics['arduino'] = ArduinoModel(**self.config['electronics']['arduino'])
+        self.electronics['servo'] = ArduinoModel(**self.config['electronics']['servo'])
 
         self.logger.info('Initializing electronics arduino')
         self.electronics['arduino'].initialize()
         self.logger.info('Initializing electronics servo')
         self.electronics['servo'].initialize()
+
+    def toggle_fiber_led(self):
+        if self.electronics['arduino'].fiber_led:
+            self.electronics['arduino'].fiber_led = 0
+        else:
+            self.electronics['arduino'].fiber_led = 1
 
     def servo_on(self):
         """Moves the servo to the ON position."""
@@ -87,7 +101,7 @@ class CalibrationSetup(Experiment):
         :param axis: 1 or 2, to select the axis
         """
         speed = self.config['mirror']['speed']
-        self.electronics['arduino'].move_mirror(direction, speed, axis)
+        self.electronics['arduino'].move_mirror(speed, direction, axis)
 
     def start_free_run(self, camera: str):
         """Starts the free run of the given camera, this has nothing to do with data acquisition or saving.
@@ -95,7 +109,7 @@ class CalibrationSetup(Experiment):
         :param str camera: must be the same as specified in the config file, for instance 'camera_microscope'
         """
         self.logger.info(f'Starting free run of {camera}')
-        self.cameras[camera].config(self.config[camera])
+        self.cameras[camera].configure(self.config[camera])
         self.cameras[camera].start_free_run()
         self.logger.debug(f'Started free run of {camera} with {self.config[camera]}')
 
@@ -127,7 +141,7 @@ class CalibrationSetup(Experiment):
         i = 0
         cartridge_number = self.config['info']['cartridge_number']
         while os.path.isfile(os.path.join(folder, base_filename.format(
-                cartrdige_number=cartridge_number,
+                cartridge_number=cartridge_number,
                 i=i))):
             i += 1
 
