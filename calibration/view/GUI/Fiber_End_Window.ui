@@ -42,20 +42,6 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="button_camera_low">
-         <property name="text">
-          <string>Camera LOW</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="button_camera_high">
-         <property name="text">
-          <string>Camera HIGH</string>
-         </property>
-        </widget>
-       </item>
-       <item>
         <widget class="QLabel" name="label_2">
          <property name="text">
           <string>Exposure</string>
@@ -76,9 +62,16 @@
         <widget class="QLineEdit" name="camera_gain_line"/>
        </item>
        <item>
-        <widget class="QPushButton" name="save_button">
+        <widget class="QPushButton" name="save_core_button">
          <property name="text">
-          <string>Save</string>
+          <string>Save Core</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="save_laser_button">
+         <property name="text">
+          <string>Save Laser</string>
          </property>
         </widget>
        </item>
