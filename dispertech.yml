@@ -6,11 +6,14 @@
 user:
   name: Aquiles
 
-arduino:
-  device: 0
+electronics:
+  arduino:
+    device: 0
 
-servo: # This is a temp fix to control the servo with a different Arduino
-  device: 1
+  servo: # This is a temp fix to control the servo with a different Arduino
+    device: 1
+
+servo:
   status: 0  # 0: Off, 1: On
 
 laser:
@@ -52,6 +55,7 @@ camera_fiber:
   #extra_args: [extra, arguments] # Extra arguments that can be passed when constructing the model
   model_camera: Dart # To keep a registry of which camera was used in the experiment
   exposure_time: 30ms # Initial exposure time (in ms)
+  gain: 0.
   fps: 30  # Frames per second, should either be defined by the camera or within the model based on timing
   binning_x: 1 # Binning
   binning_y: 1
@@ -68,7 +72,7 @@ camera_microscope:
   #extra_args: [extra, arguments] # Extra arguments that can be passed when constructing the model
   model_camera: ACE # To keep a registry of which camera was used in the experiment
   exposure_time: 30ms # Initial exposure time (in ms)
-  gain: 0
+  gain: 0.
   fps: 30  # Frames per second, should either be defined by the camera or within the model based on timing
   binning_x: 1 # Binning
   binning_y: 1
@@ -120,15 +124,15 @@ sample:
 laser_focusing:
   high:
     exposure_time: 50ms
-    gain: 18
+    gain: 18.
   low:
     exposure_time: .01ms
-    gain: 0
+    gain: 0.
 
 microscope_focusing:
   high:
     exposure_time: 100ms
-    gain: 24
+    gain: 24.
   low:
     exposure_time: 1ms
-    gain: 0
+    gain: 0.
