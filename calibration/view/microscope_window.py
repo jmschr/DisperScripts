@@ -1,3 +1,4 @@
+import numpy as np
 import os
 
 from PyQt5 import uic
@@ -28,10 +29,10 @@ class MicroscopeWindow(QMainWindow):
 
         self.cartridge_line.editingFinished.connect(self.update_experiment)
         self.motor_speed_line.editingFinished.connect(self.update_experiment)
-        self.apply_button.clicked.connect(self.update_experiment)
+        self.apply_button.clicked.connect(self.update_camera)
 
-        self.camera_exposure_line.editingFinished.connect(self.update_camera)
-        self.camera_gain_line.editingFinished.connect(self.update_camera)
+        # self.camera_exposure_line.editingFinished.connect(self.update_camera)
+        # self.camera_gain_line.editingFinished.connect(self.update_camera)
 
         self.save_button.clicked.connect(self.experiment.save_particles_image)
         self.button_laser.clicked.connect(self.toggle_servo)
@@ -68,11 +69,7 @@ class MicroscopeWindow(QMainWindow):
             'exposure_time': Q_(self.camera_exposure_line.text()),
             'gain': float(self.camera_gain_line.text()),
         })
-
-        self.experiment.cameras['camera_microscope'].set_exposure(Q_(self.camera_exposure_line.text()))
-        self.experiment.cameras['camera_microscope'].set_gain(float(self.camera_gain_line.text()))
-        self.experiment.cameras['camera_microscope'].stop_free_run()
-        self.experiment.cameras['camera_microscope'].start_free_run()
+        self.experiment.start_free_run('camera_microscope')
 
     def update_experiment(self):
         """ Update the parameters of the experiment, from the UI to the model. Can be triggered by the click on an
@@ -129,7 +126,17 @@ class MicroscopeWindow(QMainWindow):
         self.experiment.move_mirror(direction=0, axis=1)
 
     def update_image(self):
-        self.camera_viewer.update_image(self.experiment.cameras['camera_microscope'].temp_image)
+        if self.background_box.isChecked() and self.experiment.background is not None:
+            t_image = self.experiment.cameras['camera_microscope'].temp_image
+            if t_image is not None:
+                img = t_image.astype(np.int16) - self.experiment.background
+                img[img < 0] = 0
+                img = img.astype(np.uint16)
+            else:
+                img = None
+        else:
+            img = self.experiment.cameras['camera_microscope'].temp_image
+        self.camera_viewer.update_image(img)
 
 
 if __name__ == '__main__':

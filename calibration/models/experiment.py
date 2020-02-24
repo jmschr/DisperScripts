@@ -16,6 +16,7 @@ class CalibrationSetup(Experiment):
     def __init__(self, filename=None):
         super(CalibrationSetup, self).__init__(filename=filename)
 
+        self.background = None
         self.cameras = {
             'camera_microscope': None,
             'camera_fiber': None,
@@ -109,7 +110,16 @@ class CalibrationSetup(Experiment):
         :param str camera: must be the same as specified in the config file, for instance 'camera_microscope'
         """
         self.logger.info(f'Starting free run of {camera}')
+        if self.cameras[camera].free_run_running:
+            self.cameras[camera].stop_free_run()
         self.cameras[camera].configure(self.config[camera])
+        if camera is "camera_microscope":
+            self.logger.info('Acquiring Background')
+            self.cameras[camera].set_acquisition_mode(self.cameras[camera].MODE_SINGLE_SHOT)
+            self.cameras[camera].trigger_camera()
+            time.sleep(.25)
+            self.background = self.cameras[camera].read_camera()[-1]
+            self.logger.info(f'Background Acquired, max: {np.max(self.background)}, min: {np.min(self.background)}')
         self.cameras[camera].start_free_run()
         self.logger.debug(f'Started free run of {camera} with {self.config[camera]}')
 
