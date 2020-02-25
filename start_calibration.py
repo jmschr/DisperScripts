@@ -27,7 +27,6 @@ if __name__ == "__main__":
     app = QApplication([])
     microscope_window = MicroscopeWindow(experiment)
     microscope_window.show()
-    print('HERE!')
     fiber_window = FiberWindow(experiment)
     fiber_window.show()
     app.exec()

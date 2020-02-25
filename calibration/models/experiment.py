@@ -48,6 +48,7 @@ class CalibrationSetup(Experiment):
             self.cameras[cam].configure(self.config[cam])
             self.cameras[cam].set_auto_exposure('Off')
             self.cameras[cam].set_auto_gain('Off')
+            self.cameras[cam].set_pixel_format('Mono12')
 
     def initialize_electronics(self):
         """Assumes there are two arduinos connected, one to control a Servo and another to control the rest.
@@ -204,10 +205,22 @@ class CalibrationSetup(Experiment):
         .. TODO:: Having a separate method just to save the laser position is useful when wanting to automatize
             tasks, for example using several laser powers to check proper centroid extraction.
         """
+        self.logger.info('Saving laser position')
+        self.stop_free_run('camera_fiber')
+        while self.cameras['camera_microscope'].temp_image is not None:
+            pass
         current_laser_power = self.config['laser']['power']
+        current_exposure_time = self.config['camera_fiber']['exposure_time']
+        self.config['laser']['power'] = self.config['centroid']['laser_power']
+        self.config['camera_fiber']['exposure_time'] = Q_(self.config['centroid']['exposure_time'])
         self.set_laser_power(self.config['centroid']['laser_power'])
+        self.start_free_run('camera_fiber')
         self.save_image_fiber_camera(self.config['info']['filename_laser'])
+        self.stop_free_run('camera_fiber')
         self.set_laser_power(current_laser_power)
+        self.config['laser']['power'] = current_laser_power
+        self.config['camera_fiber']['exposure_time'] = current_exposure_time
+        self.start_free_run('camera_fiber')
 
     def save_particles_image(self):
         """ Saves the image shown on the microscope. This is only to keep as a reference. This method wraps the
