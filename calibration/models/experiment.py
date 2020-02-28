@@ -165,16 +165,21 @@ class CalibrationSetup(Experiment):
         :param filename: it assumes it has a placeholder for {cartridge_number} and {i} in order not to over write
                             files
         """
-        filename = self.get_filename(filename)
+        self.stop_free_run('camera_fiber')
+        self.logger.info('Acquiring image from the fiber')
+        # self.cameras['camera_fiber'].configure(self.config['camera_fiber'])
+        self.cameras['camera_fiber'].set_exposure(self.config['camera_fiber']['exposure_time'])
+        self.cameras['camera_fiber'].set_gain(self.config['camera_fiber']['gain'])
+        self.cameras['camera_fiber'].set_acquisition_mode(self.cameras['camera_fiber'].MODE_SINGLE_SHOT)
+        self.cameras['camera_fiber'].trigger_camera()
+        time.sleep(.25)
+        image = self.cameras['camera_fiber'].read_camera()[-1]
+        self.logger.info(f'Acquired fiber image, max: {np.max(image)}, min: {np.min(image)}')
 
-        t0 = time.time()
-        temp_image = self.cameras['camera_fiber'].temp_image
-        while temp_image is None:
-            temp_image = self.cameras['camera_fiber'].temp_image
-            if time.time() - t0 > 10:
-                raise CameraTimeout("It took too long to get a new frame for saving the fiber data")
-        np.save(filename, temp_image)
+        filename = self.get_filename(filename)
+        np.save(filename, image)
         self.logger.info(f'Saved fiber data to {filename}')
+        self.start_free_run('camera_fiber')
 
     def save_image_microscope_camera(self, filename: str) -> None:
         """Saves the image shown on the microscope camera to the given filename.
@@ -206,20 +211,17 @@ class CalibrationSetup(Experiment):
             tasks, for example using several laser powers to check proper centroid extraction.
         """
         self.logger.info('Saving laser position')
-        self.stop_free_run('camera_fiber')
-        while self.cameras['camera_microscope'].temp_image is not None:
-            pass
         current_laser_power = self.config['laser']['power']
-        current_exposure_time = self.config['camera_fiber']['exposure_time']
+        camera_config = self.config['camera_fiber'].copy()
         self.config['laser']['power'] = self.config['centroid']['laser_power']
         self.config['camera_fiber']['exposure_time'] = Q_(self.config['centroid']['exposure_time'])
+        self.config['camera_fiber']['gain'] = self.config['centroid']['gain']
         self.set_laser_power(self.config['centroid']['laser_power'])
-        self.start_free_run('camera_fiber')
         self.save_image_fiber_camera(self.config['info']['filename_laser'])
         self.stop_free_run('camera_fiber')
         self.set_laser_power(current_laser_power)
         self.config['laser']['power'] = current_laser_power
-        self.config['camera_fiber']['exposure_time'] = current_exposure_time
+        self.config['camera_fiber'] = camera_config.copy()
         self.start_free_run('camera_fiber')
 
     def save_particles_image(self):

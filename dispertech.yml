@@ -33,6 +33,7 @@ info:
 centroid:
   laser_power: 30  # This is the laser power that will be used in order to be consistent with centroid extraction
   exposure_time: 1ms
+  gain: 0.
 
 saving:
   auto_save: False
