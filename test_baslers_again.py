@@ -2,14 +2,12 @@
 
 import time
 from threading import Thread
-
 from time import sleep
 
+from calibration_setup.models.cameras.basler import Camera
 from pypylon import pylon
 
 from experimentor import Q_
-from calibration_setup.models.cameras.basler import Camera
-
 
 cam1 = Camera('ac')
 cam1.initialize()

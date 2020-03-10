@@ -1,8 +1,6 @@
 import logging
-
-from multiprocessing.spawn import freeze_support
-
 import sys
+from multiprocessing.spawn import freeze_support
 
 from PyQt5.QtWidgets import QApplication
 

@@ -1,8 +1,8 @@
-import numpy as np
 import os
 import time
-
 from datetime import datetime
+
+import numpy as np
 
 from dispertech.models.cameras.basler import Camera
 from dispertech.models.electronics.arduino import ArduinoModel
