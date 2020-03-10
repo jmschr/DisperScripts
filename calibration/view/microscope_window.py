@@ -1,6 +1,6 @@
-import numpy as np
 import os
 
+import numpy as np
 from PyQt5 import uic
 from PyQt5.QtCore import QTimer
 from PyQt5.QtWidgets import QMainWindow
@@ -8,8 +8,6 @@ from PyQt5.QtWidgets import QMainWindow
 from calibration.view import BASE_DIR_VIEW
 from experimentor import Q_
 from experimentor.lib.log import get_logger
-
-import calibration.view.GUI.resources
 from experimentor.views.camera.camera_viewer_widget import CameraViewerWidget
 
 logger = get_logger(__name__)
