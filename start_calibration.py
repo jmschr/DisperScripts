@@ -1,19 +1,19 @@
 import logging
-import sys
 from multiprocessing.spawn import freeze_support
 
 from PyQt5.QtWidgets import QApplication
+from experimentor.lib.log import get_logger, log_to_screen
+from experimentor.models.models import BaseModel
 
 from calibration.models.experiment import CalibrationSetup
 from calibration.view.fiber_window import FiberWindow
 from calibration.view.microscope_window import MicroscopeWindow
-from experimentor.lib.log import get_logger, log_to_screen
 
 if __name__ == "__main__":
     freeze_support()
 
     logger = get_logger(level=logging.INFO)
-    handler = log_to_screen(level=logging.INFO)
+    handler = log_to_screen(logger, level=logging.INFO)
 
     experiment = CalibrationSetup('dispertech.yml')
     experiment.initialize_cameras()
@@ -29,4 +29,5 @@ if __name__ == "__main__":
     fiber_window.show()
     app.exec()
     experiment.finalize()
-    sys.exit()
+    for inst in BaseModel.get_instances(recursive=True):
+        inst.finalize()

@@ -3,12 +3,10 @@ import time
 from datetime import datetime
 
 import numpy as np
-
 from dispertech.models.cameras.basler import Camera
 from dispertech.models.electronics.arduino import ArduinoModel
 from experimentor import Q_
 from experimentor.models.cameras.exceptions import CameraTimeout
-from experimentor.models.decorators import make_async_thread
 from experimentor.models.experiments.base_experiment import Experiment
 
 
@@ -94,7 +92,6 @@ class CalibrationSetup(Experiment):
         self.electronics['arduino'].laser_power(power)
         self.config['laser']['power'] = power
 
-    @make_async_thread
     def move_mirror(self, direction: int, axis: int):
         """ Moves the mirror connected to the board
 
@@ -231,3 +228,9 @@ class CalibrationSetup(Experiment):
         """
         base_filename = self.config['info']['filename_microscope']
         self.save_image_microscope_camera(base_filename)
+
+    def finalize(self):
+        super().finalize()
+        self.clean_up_threads()
+        if len(self._threads):
+            self.logger.warning(f'There are {len(self._threads)} still alive in Experiment')
