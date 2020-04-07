@@ -8,10 +8,10 @@ user:
 
 electronics:
   arduino:
-    device: 0
+    device: 1
 
   servo: # This is a temp fix to control the servo with a different Arduino
-    device: 1
+    device: 0
 
 servo:
   status: 0  # 0: Off, 1: On
@@ -23,7 +23,7 @@ mirror:
   speed: 1
 
 info:
-  folder: "D:\\Data\\Dispertech"
+  folder: "/home/aquiles/Data/Dispertech"
   cartridge_number: 1900000
   description: "After UV"
   filename_fiber: fiber_end_{cartridge_number}_{i}.npy

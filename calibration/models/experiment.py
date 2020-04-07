@@ -6,6 +6,7 @@ import numpy as np
 from dispertech.models.cameras.basler import Camera
 from dispertech.models.electronics.arduino import ArduinoModel
 from experimentor import Q_
+from experimentor.lib import fitgaussian
 from experimentor.models.cameras.exceptions import CameraTimeout
 from experimentor.models.experiments.base_experiment import Experiment
 
@@ -24,6 +25,9 @@ class CalibrationSetup(Experiment):
             'arduino': None,
             'servo': None,
         }
+
+        self.extracted_position = None
+        self.laser_center = None
 
     def load_configuration(self, filename):
         super(CalibrationSetup, self).load_configuration(filename)
@@ -112,10 +116,11 @@ class CalibrationSetup(Experiment):
             self.cameras[camera].stop_free_run()
         self.cameras[camera].configure(self.config[camera])
         if camera is "camera_microscope":
+            self.cameras[camera].stop_camera()
             self.logger.info('Acquiring Background')
             self.cameras[camera].set_acquisition_mode(self.cameras[camera].MODE_SINGLE_SHOT)
             self.cameras[camera].trigger_camera()
-            time.sleep(.25)
+            time.sleep(.02)
             self.background = self.cameras[camera].read_camera()[-1]
             self.logger.info(f'Background Acquired, max: {np.max(self.background)}, min: {np.min(self.background)}')
         self.cameras[camera].start_free_run()
@@ -228,6 +233,48 @@ class CalibrationSetup(Experiment):
         """
         base_filename = self.config['info']['filename_microscope']
         self.save_image_microscope_camera(base_filename)
+
+    def calculate_gaussian_centroid(self, image, x, y, crop_size):
+        x = round(x)
+        y = round(y)
+        cropped_data = np.copy(image[x - crop_size:x + crop_size, y - crop_size:y + crop_size])
+        cropped_data[cropped_data < np.mean(cropped_data)] = 0
+        try:
+            p = fitgaussian(cropped_data)
+            extracted_position = p[1] + x - crop_size, p[2] + y - crop_size
+            self.logger.info(f'Calculated center: {extracted_position}')
+        except:
+            extracted_position = None
+            self.logger.exception('Exception fitting the gaussian')
+        return extracted_position
+
+    def calculate_laser_center(self):
+        """ This method calculates the laser position based on the reflection from the fiber tip. It is meant to be
+        used as a reference when focusing the laser on the fiber for calibrating.
+
+        .. TODO:: Judge how precise this is. Perhaps it would be possible to use it instead of the laser reflection on
+            the mirror?
+        """
+        image = np.copy(self.cameras['camera_fiber'].temp_image)
+        brightest = np.unravel_index(image.argmax(), image.shape)
+        self.laser_center = self.calculate_gaussian_centroid(image, brightest[0], brightest[1], crop_size=25)
+
+    def calculate_fiber_center(self, x, y, crop_size=15):
+        """ Calculate the core center based on some initial coordinates x and y.
+        It will perform a gaussian fit of a cropped region and store the data.
+
+        Parameters
+        ----------
+        x: float
+            x-coordinate for the initial fit of the image
+        y: float
+            y-coordinate for the initail fit of the image
+        crop_size: int, optional
+            Size of the square crop around x, y in order to minimize errors
+        """
+        self.logger.info(f'Calculating fiber center using ({x}, {y})')
+        image = np.copy(self.cameras['camera_fiber'].temp_image)
+        self.extracted_position = self.calculate_gaussian_centroid(image, x, y, crop_size)
 
     def finalize(self):
         super().finalize()
