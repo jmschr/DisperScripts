@@ -11,12 +11,8 @@ from experimentor.core import Publisher
 from experimentor.views.camera import CameraViewerWidget
 
 
-
-
-
 logger = get_logger()
-handler = log_to_screen(level=logging.DEBUG)
-
+handler = log_to_screen(level=logging.INFO)
 
 ace = Camera('ac')
 ace.initialize()
@@ -26,16 +22,8 @@ ace.set_exposure(Q_('.1s'))
 ace.start_free_run()
 
 app = QApplication([])
-window = CameraViewerWidget()
+window = CameraViewerWidget.connect_to_camera(ace)
 window.show()
-
-def update_image():
-    window.update_image(ace.temp_image)
-
-timer = QTimer()
-timer.timeout.connect(update_image)
-timer.start(50)
-
 app.exec()
 
 ace.finalize()
