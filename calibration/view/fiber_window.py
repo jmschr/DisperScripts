@@ -19,7 +19,7 @@ class FiberWindow(QMainWindow):
 
         self.experiment = experiment
 
-        self.camera_viewer = CameraViewerWidget()
+        self.camera_viewer = CameraViewerWidget(parent=self)
         self.camera_widget.layout().addWidget(self.camera_viewer)
         self.camera_viewer.clicked_on_image.connect(self.mouse_clicked)
 

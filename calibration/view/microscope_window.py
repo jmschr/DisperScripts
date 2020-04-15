@@ -22,7 +22,7 @@ class MicroscopeWindow(QMainWindow):
         filename = os.path.join(BASE_DIR_VIEW, 'GUI', 'Microscope_Focusing.ui')
         uic.loadUi(filename, self)
 
-        self.camera_viewer = CameraViewerWidget()
+        self.camera_viewer = CameraViewerWidget(parent=self)
         self.camera_widget.layout().addWidget(self.camera_viewer)
 
         self.cartridge_line.editingFinished.connect(self.update_experiment)
