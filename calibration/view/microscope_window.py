@@ -74,8 +74,6 @@ class MicroscopeWindow(QMainWindow):
         apply button or by another signal, such as finished editing a line """
 
         logger.info('Updating experiment parameters')
-        self.experiment.cameras['camera_microscope'].set_exposure(Q_(self.camera_exposure_line.text()))
-        self.experiment.cameras['camera_microscope'].set_gain(float(self.camera_gain_line.text()))
 
         self.experiment.config['info'].update({
             'cartridge_number': str(self.cartridge_line.text()),
@@ -83,8 +81,6 @@ class MicroscopeWindow(QMainWindow):
         self.experiment.config['mirror'].update({
             'speed': int(self.motor_speed_line.text()),
         })
-
-        self.update_ui()  # Forces to refresh the parameters
 
     def update_laser(self, power):
         power = int(power)

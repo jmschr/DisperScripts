@@ -26,11 +26,10 @@ class FiberWindow(QMainWindow):
         self.button_fiber_led.clicked.connect(self.experiment.toggle_fiber_led)
         self.button_fiber_led.clicked.connect(self.update_ui)
 
+        self.apply_button.clicked.connect(self.update_camera)
         self.save_core_button.clicked.connect(self.experiment.save_fiber_core)
         self.save_laser_button.clicked.connect(self.experiment.save_laser_position)
 
-        self.camera_exposure_line.editingFinished.connect(self.update_camera)
-        self.camera_gain_line.editingFinished.connect(self.update_camera)
 
         self.update_image_timer = QTimer()
         self.update_image_timer.timeout.connect(self.update_image)
@@ -51,7 +50,6 @@ class FiberWindow(QMainWindow):
         if self.experiment.extracted_position:
             self.fiber_core_position.setText(f"{self.experiment.extracted_position[0]:4.2f}, {self.experiment.extracted_position[1]:4.2f}")
 
-
     def update_ui(self):
         self.camera_exposure_line.setText("{:~}".format(Q_(self.experiment.config['camera_fiber']['exposure_time'])))
         self.camera_gain_line.setText(str(self.experiment.config['camera_fiber']['gain']))
@@ -62,6 +60,7 @@ class FiberWindow(QMainWindow):
 
     def update_camera(self):
         """ Updates the properties of the camera. """
+        self.experiment.cameras['camera_fiber'].stop_free_run()
 
         logger.info('Updating parameters of the camera')
         self.experiment.config['camera_fiber'].update({
@@ -70,14 +69,7 @@ class FiberWindow(QMainWindow):
         })
         self.experiment.cameras['camera_fiber'].set_exposure(Q_(self.camera_exposure_line.text()))
         self.experiment.cameras['camera_fiber'].set_gain(float(self.camera_gain_line.text()))
-        self.experiment.cameras['camera_fiber'].stop_free_run()
         self.experiment.cameras['camera_fiber'].start_free_run()
-
-    def update_experiment(self):
-        logger.info('Updating the properties of the experiment')
-        self.experiment.cameras['camera_fiber'].set_exposure(Q_(self.camera_exposure_line.text()))
-        self.experiment.cameras['camera_fiber'].set_gain(float(self.camera_gain_line.text()))
-        self.update_ui()
 
     def update_image(self):
         self.camera_viewer.update_image(self.experiment.cameras['camera_fiber'].temp_image)

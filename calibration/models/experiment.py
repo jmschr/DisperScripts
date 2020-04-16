@@ -115,15 +115,11 @@ class CalibrationSetup(Experiment):
         if self.cameras[camera].free_run_running:
             self.cameras[camera].stop_free_run()
         self.cameras[camera].configure(self.config[camera])
-        if camera is "camera_microscope":
-            self.cameras[camera].stop_camera()
-            self.logger.info('Acquiring Background')
-            self.cameras[camera].set_acquisition_mode(self.cameras[camera].MODE_SINGLE_SHOT)
-            self.cameras[camera].trigger_camera()
-            time.sleep(.02)
-            self.background = self.cameras[camera].read_camera()[-1]
-            self.logger.info(f'Background Acquired, max: {np.max(self.background)}, min: {np.min(self.background)}')
         self.cameras[camera].start_free_run()
+        if camera is "camera_microscope":
+            self.background = self.cameras[camera].temp_image
+            self.logger.info(f'Background Acquired, max: {np.max(self.background)}, min: {np.min(self.background)}')
+
         self.logger.debug(f'Started free run of {camera} with {self.config[camera]}')
 
     def stop_free_run(self, camera: str):

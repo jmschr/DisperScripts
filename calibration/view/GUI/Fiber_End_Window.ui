@@ -19,7 +19,7 @@
      <widget class="QWidget" name="widget" native="true">
       <property name="maximumSize">
        <size>
-        <width>200</width>
+        <width>115</width>
         <height>16777215</height>
        </size>
       </property>
@@ -50,6 +50,13 @@
        </item>
        <item>
         <widget class="QLineEdit" name="camera_gain_line"/>
+       </item>
+       <item>
+        <widget class="QPushButton" name="apply_button">
+         <property name="text">
+          <string>Apply</string>
+         </property>
+        </widget>
        </item>
        <item>
         <widget class="QPushButton" name="save_core_button">
