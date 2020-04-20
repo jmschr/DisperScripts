@@ -34,6 +34,13 @@ class CalibrationSetup(Experiment):
         self.config['camera_microscope']['exposure_time'] = Q_(self.config['camera_microscope']['exposure_time'])
         self.config['camera_fiber']['exposure_time'] = Q_(self.config['camera_fiber']['exposure_time'])
 
+    def initialize(self):
+        self.initialize_cameras()
+        self.initialize_electronics()
+        self.servo_off()
+        self.start_free_run('camera_microscope')
+        self.start_free_run('camera_fiber')
+
     def initialize_cameras(self):
         """Assume a specific setup working with baslers and initialize both cameras"""
         self.logger.info('Initializing cameras')
