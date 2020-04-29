@@ -3,7 +3,7 @@ import time
 from datetime import datetime
 
 import numpy as np
-from dispertech.models.cameras.basler import Camera
+from experimentor.models.devices.cameras.basler.basler import BaslerCamera as Camera
 from dispertech.models.electronics.arduino import ArduinoModel
 from experimentor import Q_
 from experimentor.lib import fitgaussian
@@ -29,17 +29,12 @@ class CalibrationSetup(Experiment):
         self.extracted_position = None
         self.laser_center = None
 
-    def load_configuration(self, filename):
-        super(CalibrationSetup, self).load_configuration(filename)
-        self.config['camera_microscope']['exposure_time'] = Q_(self.config['camera_microscope']['exposure_time'])
-        self.config['camera_fiber']['exposure_time'] = Q_(self.config['camera_fiber']['exposure_time'])
-
     def initialize(self):
         self.initialize_cameras()
         self.initialize_electronics()
         self.servo_off()
-        self.start_free_run('camera_microscope')
-        self.start_free_run('camera_fiber')
+        self.cameras['camera_microscope'].start_free_run()
+        self.cameras['camera_fiber'].start_free_run()
 
     def initialize_cameras(self):
         """Assume a specific setup working with baslers and initialize both cameras"""
@@ -54,10 +49,10 @@ class CalibrationSetup(Experiment):
             self.logger.info(f'Initializing {cam}')
             self.cameras[cam].initialize()
             self.logger.debug(f'Configuring {cam} with {self.config[cam]}')
-            self.cameras[cam].configure(self.config[cam])
-            self.cameras[cam].set_auto_exposure('Off')
-            self.cameras[cam].set_auto_gain('Off')
-            self.cameras[cam].set_pixel_format('Mono12')
+            config_cam = self.config[cam]['config']
+            config_cam['exposure'] = Q_(config_cam['exposure'])
+            self.cameras[cam].config.update(config_cam)
+            self.cameras[cam].config.apply_all()
 
     def initialize_electronics(self):
         """Assumes there are two arduinos connected, one to control a Servo and another to control the rest.
@@ -113,21 +108,11 @@ class CalibrationSetup(Experiment):
         speed = self.config['mirror']['speed']
         self.electronics['arduino'].move_mirror(speed, direction, axis)
 
-    def start_free_run(self, camera: str):
-        """Starts the free run of the given camera, this has nothing to do with data acquisition or saving.
-
-        :param str camera: must be the same as specified in the config file, for instance 'camera_microscope'
-        """
-        self.logger.info(f'Starting free run of {camera}')
-        if self.cameras[camera].free_run_running:
-            self.cameras[camera].stop_free_run()
-        self.cameras[camera].configure(self.config[camera])
-        self.cameras[camera].start_free_run()
-        if camera is "camera_microscope":
-            self.background = self.cameras[camera].temp_image
-            self.logger.info(f'Background Acquired, max: {np.max(self.background)}, min: {np.min(self.background)}')
-
-        self.logger.debug(f'Started free run of {camera} with {self.config[camera]}')
+    def get_latest_image(self, camera: str):
+        """ Reads the camera """
+        img = self.cameras[camera].read_camera()
+        if len(img) >= 1:
+            return img[-1]
 
     def stop_free_run(self, camera: str):
         """ Stops the free run of the camera.

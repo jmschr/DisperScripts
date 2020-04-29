@@ -56,18 +56,19 @@ class MicroscopeWindow(QMainWindow):
         self.power_slider.setValue(self.experiment.config['laser']['power'])
         self.lcd_laser_power.display(self.experiment.config['laser']['power'])
         self.camera_exposure_line.setText(
-            "{:~}".format(Q_(self.experiment.config['camera_microscope']['exposure_time'])))
-        self.camera_gain_line.setText(str(self.experiment.config['camera_microscope']['gain']))
+            "{:~}".format(self.experiment.cameras['camera_microscope'].exposure))
+        self.camera_gain_line.setText(str(self.experiment.cameras['camera_microscope'].gain))
 
     def update_camera(self):
         """ Updates the properties of the camera. """
 
         logger.info('Updating parameters of the camera')
-        self.experiment.config['camera_microscope'].update({
-            'exposure_time': Q_(self.camera_exposure_line.text()),
+        self.experiment.cameras['camera_microscope'].config.update({
+            'exposure': Q_(self.camera_exposure_line.text()),
             'gain': float(self.camera_gain_line.text()),
         })
-        self.experiment.start_free_run('camera_microscope')
+        self.experiment.cameras['camera_microscope'].config.apply_all()
+        self.experiment.cameras['camera_microscope'].start_free_run()
 
     def update_experiment(self):
         """ Update the parameters of the experiment, from the UI to the model. Can be triggered by the click on an
@@ -121,7 +122,7 @@ class MicroscopeWindow(QMainWindow):
 
     def update_image(self):
         if self.background_box.isChecked() and self.experiment.background is not None:
-            t_image = self.experiment.cameras['camera_microscope'].temp_image
+            t_image = self.experiment.get_latest_image('camera_microscope')
             if t_image is not None:
                 img = t_image.astype(np.int16) - self.experiment.background
                 img[img < 0] = 0
@@ -129,7 +130,7 @@ class MicroscopeWindow(QMainWindow):
             else:
                 img = None
         else:
-            img = self.experiment.cameras['camera_microscope'].temp_image
+            img = self.experiment.get_latest_image('camera_microscope')
         self.camera_viewer.update_image(img)
 
 
