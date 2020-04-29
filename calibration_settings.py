@@ -1,5 +1,4 @@
-START_WINDOW = 'calibration.view.microscope_window.MicroscopeWindow'
-
+START_WINDOW = 'calibration.view.fiber_window.FiberWindow'
 
 EXPERIMENT_MODEL = 'calibration.models.experiment.CalibrationSetup'
 EXPERIMENT_MODEL_INIT = {

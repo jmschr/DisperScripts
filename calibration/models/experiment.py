@@ -263,9 +263,3 @@ class CalibrationSetup(Experiment):
         self.logger.info(f'Calculating fiber center using ({x}, {y})')
         image = np.copy(self.cameras['camera_fiber'].temp_image)
         self.extracted_position = self.calculate_gaussian_centroid(image, x, y, crop_size)
-
-    def finalize(self):
-        super().finalize()
-        self.clean_up_threads()
-        if len(self._threads):
-            self.logger.warning(f'There are {len(self._threads)} still alive in Experiment')

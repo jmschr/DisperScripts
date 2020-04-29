@@ -6,6 +6,7 @@ from PyQt5.QtCore import QTimer
 from PyQt5.QtWidgets import QMainWindow
 
 from calibration.view import BASE_DIR_VIEW
+from calibration.view.fiber_window import FiberWindow
 from experimentor import Q_
 from experimentor.lib.log import get_logger
 from experimentor.views.camera.camera_viewer_widget import CameraViewerWidget
@@ -16,6 +17,8 @@ logger = get_logger(__name__)
 class MicroscopeWindow(QMainWindow):
     def __init__(self, experiment=None):
         super().__init__()
+        fiber_window = FiberWindow(experiment)
+        fiber_window.show()
         self.experiment = experiment
         self.button_laser_status = 0
 
@@ -28,9 +31,6 @@ class MicroscopeWindow(QMainWindow):
         self.cartridge_line.editingFinished.connect(self.update_experiment)
         self.motor_speed_line.editingFinished.connect(self.update_experiment)
         self.apply_button.clicked.connect(self.update_camera)
-
-        # self.camera_exposure_line.editingFinished.connect(self.update_camera)
-        # self.camera_gain_line.editingFinished.connect(self.update_camera)
 
         self.save_button.clicked.connect(self.experiment.save_particles_image)
         self.button_laser.clicked.connect(self.toggle_servo)

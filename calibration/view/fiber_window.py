@@ -1,6 +1,6 @@
 import os
 
-from PyQt5 import uic
+from PyQt5 import uic, QtGui
 from PyQt5.QtCore import QTimer
 from PyQt5.QtWidgets import QMainWindow
 
@@ -30,7 +30,6 @@ class FiberWindow(QMainWindow):
         self.save_core_button.clicked.connect(self.experiment.save_fiber_core)
         self.save_laser_button.clicked.connect(self.experiment.save_laser_position)
 
-
         self.update_image_timer = QTimer()
         self.update_image_timer.timeout.connect(self.update_image)
         self.update_centers_timer = QTimer()
@@ -51,8 +50,8 @@ class FiberWindow(QMainWindow):
             self.fiber_core_position.setText(f"{self.experiment.extracted_position[0]:4.2f}, {self.experiment.extracted_position[1]:4.2f}")
 
     def update_ui(self):
-        self.camera_exposure_line.setText("{:~}".format(Q_(self.experiment.config['camera_fiber']['exposure_time'])))
-        self.camera_gain_line.setText(str(self.experiment.config['camera_fiber']['gain']))
+        self.camera_exposure_line.setText("{:~}".format(Q_(self.experiment.cameras['camera_fiber'].exposure)))
+        self.camera_gain_line.setText(str(self.experiment.cameras['camera_fiber'].gain))
         if self.experiment.electronics['arduino'].fiber_led:
             self.button_fiber_led.setText('Switch LED OFF')
         else:
@@ -60,19 +59,17 @@ class FiberWindow(QMainWindow):
 
     def update_camera(self):
         """ Updates the properties of the camera. """
-        self.experiment.cameras['camera_fiber'].stop_free_run()
 
         logger.info('Updating parameters of the camera')
-        self.experiment.config['camera_fiber'].update({
-            'exposure_time': Q_(self.camera_exposure_line.text()),
+        self.experiment.cameras['camera_fiber'].config.update({
+            'exposure': Q_(self.camera_exposure_line.text()),
             'gain': float(self.camera_gain_line.text()),
         })
-        self.experiment.cameras['camera_fiber'].set_exposure(Q_(self.camera_exposure_line.text()))
-        self.experiment.cameras['camera_fiber'].set_gain(float(self.camera_gain_line.text()))
-        self.experiment.cameras['camera_fiber'].start_free_run()
+        self.experiment.cameras['camera_fiber'].config.apply_all()
 
     def update_image(self):
-        self.camera_viewer.update_image(self.experiment.cameras['camera_fiber'].temp_image)
+        img = self.experiment.get_latest_image('camera_fiber')
+        self.camera_viewer.update_image(img)
 
     def mouse_clicked(self, x, y):
         """ Slot which gets the mouse clicked on the image. The signal associated is an overwrite of the PyQtgraph
@@ -80,3 +77,9 @@ class FiberWindow(QMainWindow):
         """
         logger.info('Calculating center of the fiber')
         self.experiment.calculate_fiber_center(x, y)
+
+    def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
+        logger.info('Fiber Window Closed')
+        self.update_image_timer.stop()
+        self.update_centers_timer.stop()
+        super().closeEvent(a0)
