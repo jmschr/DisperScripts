@@ -17,8 +17,6 @@ logger = get_logger(__name__)
 class MicroscopeWindow(QMainWindow):
     def __init__(self, experiment=None):
         super().__init__()
-        fiber_window = FiberWindow(experiment)
-        fiber_window.show()
         self.experiment = experiment
         self.button_laser_status = 0
 
