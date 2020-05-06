@@ -1,0 +1,78 @@
+%YAML 1.2
+---
+# Default parameters for the Tracking program
+# All parameters can be changed to accommodate user needs.
+# All parameters can be changed at runtime with the appropriate config window
+user:
+  name: Aquiles
+
+electronics:
+  arduino:
+    device: 1
+
+  servo: # This is a temp fix to control the servo with a different Arduino
+    device: 0
+
+dart:
+  exposure: 30ms # Initial exposure time (in ms)
+  gain: 0.
+  auto_exposure: Off
+  auto_gain: Off
+  pixel_format: Mono12
+  ROI: [[1, 1280], [1, 960]]
+
+ace:
+  exposure: 30ms # Initial exposure time (in ms)
+  gain: 0.
+  auto_gain: Off
+  auto_exposure: Off
+  ROI: [[1, 1920], [1, 1200]]
+  pixel_format: Mono12
+
+servo:
+  status: 0  # 0: Off, 1: On
+
+laser:
+  power: 20
+
+mirror:
+  speed: 1
+
+info:
+  folder: "/home/aquiles/Data/Dispertech"
+  cartridge_number: 1900000
+  description: "After UV"
+  filename_fiber: fiber_end_{cartridge_number}_{i}.npy
+  filename_laser: laser_position_{cartridge_number}_{i}.npy
+  filename_microscope: microscope_{cartridge_number}_{i}.npy
+
+centroid:
+  laser_power: 30  # This is the laser power that will be used in order to be consistent with centroid extraction
+  exposure_time: 1ms
+  gain: 0.
+
+saving:
+  auto_save: False
+  auto_save_waterfall: True
+  directory: /home/aquiles
+  filename_video: Video # Can be the same filename for video and photo
+  filename_photo: Snap
+  filename_tracks: Tracks
+  filename_waterfall: Waterfall
+  filename_trajectory: Trajectory
+  filename_log: Log
+  max_memory: 200 # In megabytes
+
+GUI:
+  length_waterfall: 20 # Total length of the Waterfall (lines)
+  refresh_time: 50 # Refresh rate of the GUI (in ms)
+
+debug:
+  logging_level: Nothing # One of Nothing, Debug, Info, Warning, Error
+  queue_memory: False
+  to_screen: True
+
+sample:
+  name: a123
+  description: Short Description
+  cartrdige_number: 19NNMM
