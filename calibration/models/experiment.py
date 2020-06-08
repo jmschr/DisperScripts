@@ -7,7 +7,7 @@ from experimentor.models.devices.cameras.basler.basler import BaslerCamera as Ca
 from dispertech.models.electronics.arduino import ArduinoModel
 from experimentor import Q_
 from experimentor.lib import fitgaussian
-from experimentor.models.cameras.exceptions import CameraTimeout
+from experimentor.models.devices.cameras.exceptions import CameraTimeout
 from experimentor.models.experiments.base_experiment import Experiment
 
 
@@ -21,10 +21,7 @@ class CalibrationSetup(Experiment):
             'camera_fiber': None,
         }
 
-        self.electronics = {
-            'arduino': None,
-            'servo': None,
-        }
+        self.electronics = None
 
         self.extracted_position = None
         self.laser_center = None
@@ -59,30 +56,26 @@ class CalibrationSetup(Experiment):
         TODO:: This will change in the future, when electronics are made on a single board.
         """
 
-        self.electronics['arduino'] = ArduinoModel(**self.config['electronics']['arduino'])
-        self.electronics['servo'] = ArduinoModel(**self.config['electronics']['servo'])
-
+        self.electronics = ArduinoModel(**self.config['electronics']['arduino'])
         self.logger.info('Initializing electronics arduino')
-        self.electronics['arduino'].initialize()
-        self.logger.info('Initializing electronics servo')
-        self.electronics['servo'].initialize()
+        self.electronics.initialize()
+
+    def toggle_top_led(self):
+        self.electronics.top_led = 0 if self.electronics.top_led else 1
 
     def toggle_fiber_led(self):
-        if self.electronics['arduino'].fiber_led:
-            self.electronics['arduino'].fiber_led = 0
-        else:
-            self.electronics['arduino'].fiber_led = 1
+        self.electronics.fiber_led = 0 if self.electronics.fiber_led else 1
 
     def servo_on(self):
         """Moves the servo to the ON position."""
         self.logger.info('Setting servo ON')
-        self.electronics['servo'].move_servo(1)
+        self.electronics.move_servo(1)
         self.config['servo']['status'] = 1
 
     def servo_off(self):
         """Moves the servo to the OFF position."""
         self.logger.info('Setting servo OFF')
-        self.electronics['servo'].move_servo(0)
+        self.electronics.move_servo(0)
         self.config['servo']['status'] = 0
 
     def set_laser_power(self, power: int):
@@ -95,7 +88,7 @@ class CalibrationSetup(Experiment):
         else:
             self.servo_on()
 
-        self.electronics['arduino'].laser_power(power)
+        self.electronics.laser_power(power)
         self.config['laser']['power'] = power
 
     def move_mirror(self, direction: int, axis: int):
@@ -106,7 +99,7 @@ class CalibrationSetup(Experiment):
         :param axis: 1 or 2, to select the axis
         """
         speed = self.config['mirror']['speed']
-        self.electronics['arduino'].move_mirror(speed, direction, axis)
+        self.electronics.move_mirror(speed, direction, axis)
 
     def get_latest_image(self, camera: str):
         """ Reads the camera """

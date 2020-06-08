@@ -52,7 +52,7 @@ class FiberWindow(QMainWindow):
     def update_ui(self):
         self.camera_exposure_line.setText("{:~}".format(Q_(self.experiment.cameras['camera_fiber'].exposure)))
         self.camera_gain_line.setText(str(self.experiment.cameras['camera_fiber'].gain))
-        if self.experiment.electronics['arduino'].fiber_led:
+        if self.experiment.electronics.fiber_led:
             self.button_fiber_led.setText('Switch LED OFF')
         else:
             self.button_fiber_led.setText('Switch LED ON')

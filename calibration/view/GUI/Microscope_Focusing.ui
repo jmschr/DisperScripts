@@ -53,7 +53,7 @@
         <widget class="QLineEdit" name="cartridge_line"/>
        </item>
        <item>
-        <widget class="QPushButton" name="button_fiber_led">
+        <widget class="QPushButton" name="button_top_led">
          <property name="text">
           <string>LED</string>
          </property>

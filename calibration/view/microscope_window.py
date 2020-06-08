@@ -30,6 +30,8 @@ class MicroscopeWindow(QMainWindow):
         self.motor_speed_line.editingFinished.connect(self.update_experiment)
         self.apply_button.clicked.connect(self.update_camera)
 
+        self.button_top_led.clicked.connect(self.experiment.toggle_top_led)
+
         self.save_button.clicked.connect(self.experiment.save_particles_image)
         self.button_laser.clicked.connect(self.toggle_servo)
         self.power_slider.valueChanged.connect(self.update_laser)

@@ -17,6 +17,7 @@ from time import sleep
 #     while app.is_running:
 #         sleep(1)
 #     app.finalize()
+import yaml
 from PyQt5.QtWidgets import QApplication
 
 from calibration.models.experiment import CalibrationSetup
@@ -24,7 +25,8 @@ from calibration.view.fiber_window import FiberWindow
 from calibration.view.microscope_window import MicroscopeWindow
 
 if __name__ == "__main__":
-    experiment = CalibrationSetup('dispertech.yml')
+    experiment = CalibrationSetup()
+    experiment.load_configuration('dispertech.yml', yaml.UnsafeLoader)
     experiment.initialize()
     app = QApplication([])
     microscope_window = MicroscopeWindow(experiment)
