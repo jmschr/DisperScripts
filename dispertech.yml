@@ -8,9 +8,6 @@ user:
 
 electronics:
   arduino:
-    device: 1
-
-  servo: # This is a temp fix to control the servo with a different Arduino
     device: 0
 
 servo:
@@ -75,6 +72,8 @@ camera_microscope:
     gain: 0.
     ROI: [[1, 1920], [1, 1200]]
     pixel_format: Mono12
+    auto_exposure: Off
+    auto_gain: Off
 
 movie:
   buffer_length: 1000 # Frames
