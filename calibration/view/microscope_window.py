@@ -3,10 +3,11 @@ import os
 import numpy as np
 from PyQt5 import uic
 from PyQt5.QtCore import QTimer
-from PyQt5.QtWidgets import QMainWindow
+from PyQt5.QtWidgets import QMainWindow, QFileDialog
+
+from dispertech.view.GUI import resources
 
 from calibration.view import BASE_DIR_VIEW
-from calibration.view.fiber_window import FiberWindow
 from experimentor import Q_
 from experimentor.lib.log import get_logger
 from experimentor.views.camera.camera_viewer_widget import CameraViewerWidget
@@ -31,6 +32,8 @@ class MicroscopeWindow(QMainWindow):
         self.apply_button.clicked.connect(self.update_camera)
 
         self.button_top_led.clicked.connect(self.experiment.toggle_top_led)
+
+        self.folder_chooser_button.clicked.connect(self.get_folder)
 
         self.save_button.clicked.connect(self.experiment.save_particles_image)
         self.button_laser.clicked.connect(self.toggle_servo)
@@ -58,6 +61,7 @@ class MicroscopeWindow(QMainWindow):
         self.camera_exposure_line.setText(
             "{:~}".format(self.experiment.cameras['camera_microscope'].exposure))
         self.camera_gain_line.setText(str(self.experiment.cameras['camera_microscope'].gain))
+        self.folder_line.setText(self.experiment.config['info']['folder'])
 
     def update_camera(self):
         """ Updates the properties of the camera. """
@@ -69,6 +73,15 @@ class MicroscopeWindow(QMainWindow):
         })
         self.experiment.cameras['camera_microscope'].config.apply_all()
         self.experiment.cameras['camera_microscope'].start_free_run()
+
+    def get_folder(self):
+        folder = QFileDialog.getExistingDirectory(
+            self,
+            'Choose a folder to save data',
+            self.experiment.config['info']['folder']
+        )
+        self.experiment.config['info']['folder'] = folder
+        self.folder_line.setText(folder)
 
     def update_experiment(self):
         """ Update the parameters of the experiment, from the UI to the model. Can be triggered by the click on an
@@ -82,6 +95,8 @@ class MicroscopeWindow(QMainWindow):
         self.experiment.config['mirror'].update({
             'speed': int(self.motor_speed_line.text()),
         })
+
+        self.experiment.config['info']['folder'] = self.folder_line.text()
 
     def update_laser(self, power):
         power = int(power)
