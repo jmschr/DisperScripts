@@ -297,6 +297,26 @@
         </widget>
        </item>
        <item>
+        <widget class="QWidget" name="widget_2" native="true">
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <item>
+           <widget class="QLineEdit" name="folder_line"/>
+          </item>
+          <item>
+           <widget class="QPushButton" name="folder_chooser_button">
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="resources.qrc">
+              <normaloff>:/icons/Icons/folder-open.png</normaloff>:/icons/Icons/folder-open.png</iconset>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
         <widget class="QPushButton" name="apply_button">
          <property name="text">
           <string>Apply</string>
