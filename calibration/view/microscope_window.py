@@ -48,6 +48,9 @@ class MicroscopeWindow(QMainWindow):
         self.apply_roi_button.clicked.connect(self.update_roi)
         self.clear_roi_button.clicked.connect(self.clear_roi)
 
+        self.save_movie_button.clicked.connect(self.start_saving)
+        self.stop_save_button.clicked.connect(self.stop_saving)
+
         self.update_image_timer = QTimer()
         self.update_image_timer.timeout.connect(self.update_image)
 
@@ -163,6 +166,12 @@ class MicroscopeWindow(QMainWindow):
         self.update_image_timer.stop()
         self.experiment.clear_roi()
         self.update_image_timer.start(30)
+
+    def start_saving(self):
+        self.experiment.start_saving_images()
+
+    def stop_saving(self):
+        self.experiment.stop_saving_images()
 
 
 if __name__ == '__main__':

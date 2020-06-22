@@ -20,12 +20,13 @@ mirror:
   speed: 1
 
 info:
-  folder: "/home/aquiles/Data/Dispertech"
+  folder: "C:\\Users\\aquic\\Data"
   cartridge_number: 1900000
-  description: "After UV"
+  description: "Diffusion Movie"
   filename_fiber: fiber_end_{cartridge_number}_{i}.npy
   filename_laser: laser_position_{cartridge_number}_{i}.npy
   filename_microscope: microscope_{cartridge_number}_{i}.npy
+  filename_movie: movie_{cartridge_number}_{i}.h5
 
 centroid:
   laser_power: 30  # This is the laser power that will be used in order to be consistent with centroid extraction
@@ -35,14 +36,14 @@ centroid:
 saving:
   auto_save: False
   auto_save_waterfall: True
-  directory: /home/aquiles
+  directory:  C:\\Users\\aquic\\Data
   filename_video: Video # Can be the same filename for video and photo
   filename_photo: Snap
   filename_tracks: Tracks
   filename_waterfall: Waterfall
   filename_trajectory: Trajectory
   filename_log: Log
-  max_memory: 200 # In megabytes
+  max_memory: 2000 # In megabytes
 
 GUI:
   length_waterfall: 20 # Total length of the Waterfall (lines)

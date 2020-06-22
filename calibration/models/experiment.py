@@ -1,8 +1,15 @@
+import json
 import os
 import time
 from datetime import datetime
+from multiprocessing import Event
 
+import h5py
 import numpy as np
+
+from calibration.models.movie_saver import MovieSaver
+from experimentor.core.signal import Signal
+from experimentor.models.decorators import make_async_thread
 from experimentor.models.devices.cameras.basler.basler import BaslerCamera as Camera
 from dispertech.models.electronics.arduino import ArduinoModel
 from experimentor import Q_
@@ -12,6 +19,8 @@ from experimentor.models.experiments.base_experiment import Experiment
 
 
 class CalibrationSetup(Experiment):
+    new_image = Signal()
+
     def __init__(self, filename=None):
         super(CalibrationSetup, self).__init__(filename=filename)
 
@@ -25,6 +34,8 @@ class CalibrationSetup(Experiment):
 
         self.extracted_position = None
         self.laser_center = None
+        self.saving = False
+        self.saving_event = Event()
 
     def initialize(self):
         self.initialize_cameras()
@@ -103,6 +114,9 @@ class CalibrationSetup(Experiment):
 
     def get_latest_image(self, camera: str):
         """ Reads the camera """
+        if camera == 'camera_microscope':
+            if self.saving:
+                return self.cameras[camera].temp_image
         img = self.cameras[camera].read_camera()
         if len(img) >= 1:
             return img[-1]
@@ -275,3 +289,32 @@ class CalibrationSetup(Experiment):
         self.cameras['camera_microscope'].ROI = full_roi
         self.cameras['camera_microscope'].start_free_run()
 
+    def start_saving_images(self):
+        self.saving = True
+        base_filename = self.config['info']['filename_movie']
+        file = self.get_filename(base_filename)
+        self.saving_event.clear()
+        self.saving_process = MovieSaver(
+            file,
+            self.config['saving']['max_memory'],
+            self.cameras['camera_microscope'].frame_rate,
+            self.saving_event,
+            self.cameras['camera_microscope'].new_image.url
+        )
+        time.sleep(1)
+        self.cameras['camera_microscope'].continuous_reads()
+
+    def stop_saving_images(self):
+        self.cameras['camera_microscope'].keep_reading = False
+        self.saving_event.set()
+        time.sleep(.005)
+        if self.saving_process.is_alive():
+            print('Saving process still alive')
+            time.sleep(.01)
+            self.stop_saving_images()
+        self.saving = False
+
+    def finalize(self):
+        if self.saving:
+            self.stop_saving_images()
+        super(CalibrationSetup, self).finalize()
