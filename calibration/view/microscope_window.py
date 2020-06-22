@@ -1,4 +1,5 @@
 import os
+import time
 
 import numpy as np
 from PyQt5 import uic
@@ -44,13 +45,16 @@ class MicroscopeWindow(QMainWindow):
         self.button_up.clicked.connect(self.move_up)
         self.button_down.clicked.connect(self.move_down)
 
+        self.apply_roi_button.clicked.connect(self.update_roi)
+        self.clear_roi_button.clicked.connect(self.clear_roi)
+
         self.update_image_timer = QTimer()
         self.update_image_timer.timeout.connect(self.update_image)
 
         self.update_ui()
         self.update_experiment()
 
-        self.update_image_timer.start(50)
+        self.update_image_timer.start(30)
 
     def update_ui(self):
         """ Method to update the UI with the values given by the experiment. This does not include the camera view """
@@ -147,6 +151,18 @@ class MicroscopeWindow(QMainWindow):
         else:
             img = self.experiment.get_latest_image('camera_microscope')
         self.camera_viewer.update_image(img)
+
+    def update_roi(self):
+        self.update_image_timer.stop()
+        roi = self.camera_viewer.get_roi_values()
+        y = roi[1]
+        self.experiment.set_roi(y[0], y[1])
+        self.update_image_timer.start(30)
+
+    def clear_roi(self):
+        self.update_image_timer.stop()
+        self.experiment.clear_roi()
+        self.update_image_timer.start(30)
 
 
 if __name__ == '__main__':

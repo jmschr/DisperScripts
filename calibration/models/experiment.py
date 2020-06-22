@@ -83,12 +83,12 @@ class CalibrationSetup(Experiment):
         """
         self.logger.info(f'Setting laser power to {power}')
         power = int(power)
-        if power == 0:
-            self.servo_off()
+        if power == 10:
+            self.electronics.servo = 0
         else:
-            self.servo_on()
+            self.electronics.servo = 1
 
-        self.electronics.laser_power(power)
+        self.electronics.laser_power = power
         self.config['laser']['power'] = power
 
     def move_mirror(self, direction: int, axis: int):
@@ -148,8 +148,8 @@ class CalibrationSetup(Experiment):
         :param filename: it assumes it has a placeholder for {cartridge_number} and {i} in order not to over write
                             files
         """
-        self.stop_free_run('camera_fiber')
         self.logger.info('Acquiring image from the fiber')
+        self.cameras['camera_fiber'].stop_free_run()
         # self.cameras['camera_fiber'].configure(self.config['camera_fiber'])
         self.cameras['camera_fiber'].set_exposure(self.config['camera_fiber']['exposure_time'])
         self.cameras['camera_fiber'].set_gain(self.config['camera_fiber']['gain'])
@@ -162,7 +162,7 @@ class CalibrationSetup(Experiment):
         filename = self.get_filename(filename)
         np.save(filename, image)
         self.logger.info(f'Saved fiber data to {filename}')
-        self.start_free_run('camera_fiber')
+        self.cameras['camera_fiber'].start_free_run()
 
     def save_image_microscope_camera(self, filename: str) -> None:
         """Saves the image shown on the microscope camera to the given filename.
@@ -205,7 +205,7 @@ class CalibrationSetup(Experiment):
         self.set_laser_power(current_laser_power)
         self.config['laser']['power'] = current_laser_power
         self.config['camera_fiber'] = camera_config.copy()
-        self.start_free_run('camera_fiber')
+        self.cameras['camera_fiber'].start_free_run()
 
     def save_particles_image(self):
         """ Saves the image shown on the microscope. This is only to keep as a reference. This method wraps the
@@ -256,3 +256,22 @@ class CalibrationSetup(Experiment):
         self.logger.info(f'Calculating fiber center using ({x}, {y})')
         image = np.copy(self.cameras['camera_fiber'].temp_image)
         self.extracted_position = self.calculate_gaussian_centroid(image, x, y, crop_size)
+
+    def set_roi(self, y_min, height):
+        """ Sets up the ROI of the microscope camera
+        """
+        self.cameras['camera_microscope'].stop_free_run()
+        current_roi = self.cameras['camera_microscope'].ROI
+        new_roi = (current_roi[0], (y_min, height))
+        self.cameras['camera_microscope'].ROI = new_roi
+        self.cameras['camera_microscope'].start_free_run()
+
+    def clear_roi(self):
+        self.cameras['camera_microscope'].stop_free_run()
+        full_roi = (
+            (0, self.cameras['camera_microscope'].ccd_width),
+            (0, self.cameras['camera_microscope'].ccd_height)
+        )
+        self.cameras['camera_microscope'].ROI = full_roi
+        self.cameras['camera_microscope'].start_free_run()
+
