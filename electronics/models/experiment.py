@@ -34,7 +34,7 @@ class ControlArduino(Experiment):
         self.electronics.measure_led = 0 if self.electronics.measure_led else 1
 
     def laser_power(self, power):
-        self.electronics.laser_power(power)
+        self.electronics.laser_power = power
 
     def toggle_servo(self):
         if self.servo:
