@@ -307,11 +307,11 @@ class CalibrationSetup(Experiment):
     def stop_saving_images(self):
         self.cameras['camera_microscope'].keep_reading = False
         self.saving_event.set()
-        time.sleep(.005)
+        time.sleep(.05)
         if self.saving_process.is_alive():
             print('Saving process still alive')
-            time.sleep(.01)
-            self.stop_saving_images()
+            time.sleep(.1)
+            # self.stop_saving_images()
         self.saving = False
 
     def finalize(self):
