@@ -1,17 +1,26 @@
+import json
 import os
 import time
 from datetime import datetime
+from multiprocessing import Event
 
+import h5py
 import numpy as np
+
+from calibration.models.movie_saver import MovieSaver
+from experimentor.core.signal import Signal
+from experimentor.models.decorators import make_async_thread
 from experimentor.models.devices.cameras.basler.basler import BaslerCamera as Camera
 from dispertech.models.electronics.arduino import ArduinoModel
 from experimentor import Q_
 from experimentor.lib import fitgaussian
-from experimentor.models.cameras.exceptions import CameraTimeout
+from experimentor.models.devices.cameras.exceptions import CameraTimeout
 from experimentor.models.experiments.base_experiment import Experiment
 
 
 class CalibrationSetup(Experiment):
+    new_image = Signal()
+
     def __init__(self, filename=None):
         super(CalibrationSetup, self).__init__(filename=filename)
 
@@ -21,13 +30,12 @@ class CalibrationSetup(Experiment):
             'camera_fiber': None,
         }
 
-        self.electronics = {
-            'arduino': None,
-            'servo': None,
-        }
+        self.electronics = None
 
         self.extracted_position = None
         self.laser_center = None
+        self.saving = False
+        self.saving_event = Event()
 
     def initialize(self):
         self.initialize_cameras()
@@ -59,30 +67,26 @@ class CalibrationSetup(Experiment):
         TODO:: This will change in the future, when electronics are made on a single board.
         """
 
-        self.electronics['arduino'] = ArduinoModel(**self.config['electronics']['arduino'])
-        self.electronics['servo'] = ArduinoModel(**self.config['electronics']['servo'])
-
+        self.electronics = ArduinoModel(**self.config['electronics']['arduino'])
         self.logger.info('Initializing electronics arduino')
-        self.electronics['arduino'].initialize()
-        self.logger.info('Initializing electronics servo')
-        self.electronics['servo'].initialize()
+        self.electronics.initialize()
+
+    def toggle_top_led(self):
+        self.electronics.top_led = 0 if self.electronics.top_led else 1
 
     def toggle_fiber_led(self):
-        if self.electronics['arduino'].fiber_led:
-            self.electronics['arduino'].fiber_led = 0
-        else:
-            self.electronics['arduino'].fiber_led = 1
+        self.electronics.fiber_led = 0 if self.electronics.fiber_led else 1
 
     def servo_on(self):
         """Moves the servo to the ON position."""
         self.logger.info('Setting servo ON')
-        self.electronics['servo'].move_servo(1)
+        self.electronics.move_servo(1)
         self.config['servo']['status'] = 1
 
     def servo_off(self):
         """Moves the servo to the OFF position."""
         self.logger.info('Setting servo OFF')
-        self.electronics['servo'].move_servo(0)
+        self.electronics.move_servo(0)
         self.config['servo']['status'] = 0
 
     def set_laser_power(self, power: int):
@@ -90,12 +94,12 @@ class CalibrationSetup(Experiment):
         """
         self.logger.info(f'Setting laser power to {power}')
         power = int(power)
-        if power == 0:
-            self.servo_off()
+        if power == 10:
+            self.electronics.servo = 0
         else:
-            self.servo_on()
+            self.electronics.servo = 1
 
-        self.electronics['arduino'].laser_power(power)
+        self.electronics.laser_power = power
         self.config['laser']['power'] = power
 
     def move_mirror(self, direction: int, axis: int):
@@ -106,10 +110,13 @@ class CalibrationSetup(Experiment):
         :param axis: 1 or 2, to select the axis
         """
         speed = self.config['mirror']['speed']
-        self.electronics['arduino'].move_mirror(speed, direction, axis)
+        self.electronics.move_mirror(speed, direction, axis)
 
     def get_latest_image(self, camera: str):
         """ Reads the camera """
+        if camera == 'camera_microscope':
+            if self.saving:
+                return self.cameras[camera].temp_image
         img = self.cameras[camera].read_camera()
         if len(img) >= 1:
             return img[-1]
@@ -155,8 +162,8 @@ class CalibrationSetup(Experiment):
         :param filename: it assumes it has a placeholder for {cartridge_number} and {i} in order not to over write
                             files
         """
-        self.stop_free_run('camera_fiber')
         self.logger.info('Acquiring image from the fiber')
+        self.cameras['camera_fiber'].stop_free_run()
         # self.cameras['camera_fiber'].configure(self.config['camera_fiber'])
         self.cameras['camera_fiber'].set_exposure(self.config['camera_fiber']['exposure_time'])
         self.cameras['camera_fiber'].set_gain(self.config['camera_fiber']['gain'])
@@ -169,7 +176,7 @@ class CalibrationSetup(Experiment):
         filename = self.get_filename(filename)
         np.save(filename, image)
         self.logger.info(f'Saved fiber data to {filename}')
-        self.start_free_run('camera_fiber')
+        self.cameras['camera_fiber'].start_free_run()
 
     def save_image_microscope_camera(self, filename: str) -> None:
         """Saves the image shown on the microscope camera to the given filename.
@@ -212,7 +219,7 @@ class CalibrationSetup(Experiment):
         self.set_laser_power(current_laser_power)
         self.config['laser']['power'] = current_laser_power
         self.config['camera_fiber'] = camera_config.copy()
-        self.start_free_run('camera_fiber')
+        self.cameras['camera_fiber'].start_free_run()
 
     def save_particles_image(self):
         """ Saves the image shown on the microscope. This is only to keep as a reference. This method wraps the
@@ -263,3 +270,51 @@ class CalibrationSetup(Experiment):
         self.logger.info(f'Calculating fiber center using ({x}, {y})')
         image = np.copy(self.cameras['camera_fiber'].temp_image)
         self.extracted_position = self.calculate_gaussian_centroid(image, x, y, crop_size)
+
+    def set_roi(self, y_min, height):
+        """ Sets up the ROI of the microscope camera
+        """
+        self.cameras['camera_microscope'].stop_free_run()
+        current_roi = self.cameras['camera_microscope'].ROI
+        new_roi = (current_roi[0], (y_min, height))
+        self.cameras['camera_microscope'].ROI = new_roi
+        self.cameras['camera_microscope'].start_free_run()
+
+    def clear_roi(self):
+        self.cameras['camera_microscope'].stop_free_run()
+        full_roi = (
+            (0, self.cameras['camera_microscope'].ccd_width),
+            (0, self.cameras['camera_microscope'].ccd_height)
+        )
+        self.cameras['camera_microscope'].ROI = full_roi
+        self.cameras['camera_microscope'].start_free_run()
+
+    def start_saving_images(self):
+        self.saving = True
+        base_filename = self.config['info']['filename_movie']
+        file = self.get_filename(base_filename)
+        self.saving_event.clear()
+        self.saving_process = MovieSaver(
+            file,
+            self.config['saving']['max_memory'],
+            self.cameras['camera_microscope'].frame_rate,
+            self.saving_event,
+            self.cameras['camera_microscope'].new_image.url
+        )
+        time.sleep(1)
+        self.cameras['camera_microscope'].continuous_reads()
+
+    def stop_saving_images(self):
+        self.cameras['camera_microscope'].keep_reading = False
+        self.saving_event.set()
+        time.sleep(.05)
+        if self.saving_process.is_alive():
+            print('Saving process still alive')
+            time.sleep(.1)
+            # self.stop_saving_images()
+        self.saving = False
+
+    def finalize(self):
+        if self.saving:
+            self.stop_saving_images()
+        super(CalibrationSetup, self).finalize()
