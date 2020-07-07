@@ -21,7 +21,7 @@ mirror:
 
 info:
   folder: "C:\\Users\\aquic\\Data"
-  cartridge_number: 1900000
+  cartridge_number: 2001001
   description: "Diffusion Movie"
   filename_fiber: fiber_end_{cartridge_number}_{i}.npy
   filename_laser: laser_position_{cartridge_number}_{i}.npy

@@ -199,7 +199,11 @@ class CalibrationSetup(Experiment):
         .. TODO:: This method was designed in order to allow extra work to be done, for example, be sure
             the LED is ON, or use different exposure times.
         """
-        self.save_image_fiber_camera(self.config['info']['filename_fiber'])
+        image = self.cameras['camera_fiber'].temp_image
+        self.logger.info(f'Saving fiber image, max: {np.max(image)}, min: {np.min(image)}')
+        filename = self.get_filename(self.config['info']['filename_fiber'])
+        np.save(filename, image)
+        # self.save_image_fiber_camera(self.config['info']['filename_fiber'])
 
     def save_laser_position(self):
         """ Saves an image of the laser on the camera.
