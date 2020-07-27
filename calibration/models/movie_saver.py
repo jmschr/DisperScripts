@@ -1,7 +1,8 @@
 import json
 import time
-import numpy as np
+
 import h5py
+import numpy as np
 import zmq
 
 from experimentor.core.meta import ExperimentorProcess

@@ -1,8 +1,10 @@
 import os
+import time
+import numpy as np
 
 from PyQt5 import uic, QtGui
 from PyQt5.QtCore import QTimer
-from PyQt5.QtWidgets import QMainWindow
+from PyQt5.QtWidgets import QMainWindow, QStatusBar
 
 from calibration.view import BASE_DIR_VIEW
 from experimentor import Q_
@@ -35,9 +37,17 @@ class FiberWindow(QMainWindow):
         self.update_centers_timer = QTimer()
         self.update_centers_timer.timeout.connect(self.update_centers)
 
+        # For debugging purposes
+        self.status_bar = self.statusBar()
+        self.setStatusBar(self.status_bar)
+        self.last_update = time.time()
+
         self.update_ui()
         self.update_image_timer.start(50)
         self.update_centers_timer.start(50)
+
+        self.updating_times = np.zeros(10)
+
 
     def update_centers(self):
         if self.laser_track.isChecked():
@@ -46,8 +56,8 @@ class FiberWindow(QMainWindow):
         if self.experiment.laser_center:
             self.laser_center_position.setText(f"{self.experiment.laser_center[0]:4.2f}, {self.experiment.laser_center[1]:4.2f}")
 
-        if self.experiment.extracted_position:
-            self.fiber_core_position.setText(f"{self.experiment.extracted_position[0]:4.2f}, {self.experiment.extracted_position[1]:4.2f}")
+        if self.experiment.fiber_center_position:
+            self.fiber_core_position.setText(f"{self.experiment.fiber_center_position[0]:4.2f}, {self.experiment.fiber_center_position[1]:4.2f}")
 
     def update_ui(self):
         self.camera_exposure_line.setText("{:~}".format(Q_(self.experiment.cameras['camera_fiber'].exposure)))
@@ -68,8 +78,14 @@ class FiberWindow(QMainWindow):
         self.experiment.cameras['camera_fiber'].config.apply_all()
 
     def update_image(self):
+        t0 = time.perf_counter()
         img = self.experiment.get_latest_image('camera_fiber')
         self.camera_viewer.update_image(img)
+        t1 = time.perf_counter() - t0
+        self.updating_times = np.roll(self.updating_times, 1)
+        self.updating_times[0] = t1
+        self.status_bar.showMessage(f'{np.mean(self.updating_times)*1000}ms')
+        self.last_update = time.time()
 
     def mouse_clicked(self, x, y):
         """ Slot which gets the mouse clicked on the image. The signal associated is an overwrite of the PyQtgraph

@@ -1,19 +1,16 @@
-import json
 import os
 import time
 from datetime import datetime
 from multiprocessing import Event
 
-import h5py
 import numpy as np
 
 from calibration.models.movie_saver import MovieSaver
-from experimentor.core.signal import Signal
-from experimentor.models.decorators import make_async_thread
-from experimentor.models.devices.cameras.basler.basler import BaslerCamera as Camera
 from dispertech.models.electronics.arduino import ArduinoModel
 from experimentor import Q_
+from experimentor.core.signal import Signal
 from experimentor.lib import fitgaussian
+from experimentor.models.devices.cameras.basler.basler import BaslerCamera as Camera
 from experimentor.models.devices.cameras.exceptions import CameraTimeout
 from experimentor.models.experiments.base_experiment import Experiment
 
@@ -32,7 +29,7 @@ class CalibrationSetup(Experiment):
 
         self.electronics = None
 
-        self.extracted_position = None
+        self.fiber_center_position = None
         self.laser_center = None
         self.saving = False
         self.saving_event = Event()
@@ -43,6 +40,7 @@ class CalibrationSetup(Experiment):
         self.servo_off()
         self.cameras['camera_microscope'].start_free_run()
         self.cameras['camera_fiber'].start_free_run()
+        self.cameras['camera_fiber'].continuous_reads()
 
     def initialize_cameras(self):
         """Assume a specific setup working with baslers and initialize both cameras"""
@@ -117,6 +115,9 @@ class CalibrationSetup(Experiment):
         if camera == 'camera_microscope':
             if self.saving:
                 return self.cameras[camera].temp_image
+        if camera == 'camera_fiber':
+            return self.cameras[camera].temp_image
+
         img = self.cameras[camera].read_camera()
         if len(img) >= 1:
             return img[-1]
@@ -273,10 +274,15 @@ class CalibrationSetup(Experiment):
         """
         self.logger.info(f'Calculating fiber center using ({x}, {y})')
         image = np.copy(self.cameras['camera_fiber'].temp_image)
-        self.extracted_position = self.calculate_gaussian_centroid(image, x, y, crop_size)
+        self.fiber_center_position = self.calculate_gaussian_centroid(image, x, y, crop_size)
 
     def set_roi(self, y_min, height):
-        """ Sets up the ROI of the microscope camera
+        """ Sets up the ROI of the microscope camera. It assumes the user only crops the vertical direction, since the
+        fiber goes all across the image.
+
+        Parameters
+        ----------
+        y_min : int
         """
         self.cameras['camera_microscope'].stop_free_run()
         current_roi = self.cameras['camera_microscope'].ROI
@@ -321,4 +327,5 @@ class CalibrationSetup(Experiment):
     def finalize(self):
         if self.saving:
             self.stop_saving_images()
+        self.cameras['camera_fiber'].keep_reading = False
         super(CalibrationSetup, self).finalize()
