@@ -1,7 +1,7 @@
 import logging
-import os
-import sys
-from time import sleep
+# import os
+# import sys
+# from time import sleep
 
 #
 # if __name__ == "__main__":
@@ -23,8 +23,12 @@ from PyQt5.QtWidgets import QApplication
 from calibration.models.experiment import CalibrationSetup
 from calibration.view.fiber_window import FiberWindow
 from calibration.view.microscope_window import MicroscopeWindow
+from experimentor.lib.log import log_to_screen, get_logger
 
 if __name__ == "__main__":
+    logger = get_logger()
+    handler = log_to_screen(logger=logger)
+
     experiment = CalibrationSetup()
     experiment.load_configuration('dispertech.yml', yaml.UnsafeLoader)
     experiment.initialize()
