@@ -60,8 +60,8 @@ class FiberWindow(QMainWindow):
             self.fiber_core_position.setText(f"{self.experiment.fiber_center_position[0]:4.2f}, {self.experiment.fiber_center_position[1]:4.2f}")
 
     def update_ui(self):
-        self.camera_exposure_line.setText("{:~}".format(Q_(self.experiment.cameras['camera_fiber'].exposure)))
-        self.camera_gain_line.setText(str(self.experiment.cameras['camera_fiber'].gain))
+        self.camera_exposure_line.setText("{:~}".format(Q_(self.experiment.camera_fiber.exposure)))
+        self.camera_gain_line.setText(str(self.experiment.camera_fiber.gain))
         if self.experiment.electronics.fiber_led:
             self.button_fiber_led.setText('Switch LED OFF')
         else:
@@ -71,11 +71,11 @@ class FiberWindow(QMainWindow):
         """ Updates the properties of the camera. """
 
         logger.info('Updating parameters of the camera')
-        self.experiment.cameras['camera_fiber'].config.update({
+        self.experiment.camera_fiber.config.update({
             'exposure': Q_(self.camera_exposure_line.text()),
             'gain': float(self.camera_gain_line.text()),
         })
-        self.experiment.cameras['camera_fiber'].config.apply_all()
+        self.experiment.camera_fiber.config.apply_all()
 
     def update_image(self):
         t0 = time.perf_counter()

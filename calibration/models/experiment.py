@@ -9,7 +9,7 @@ from calibration.models.movie_saver import MovieSaver
 from dispertech.models.electronics.arduino import ArduinoModel
 from experimentor import Q_
 from experimentor.core.signal import Signal
-from experimentor.lib import fitgaussian
+from experimentor.lib.fitgaussian import fitgaussian
 from experimentor.models.devices.cameras.basler.basler import BaslerCamera as Camera
 from experimentor.models.devices.cameras.exceptions import CameraTimeout
 from experimentor.models.experiments.base_experiment import Experiment
@@ -22,10 +22,8 @@ class CalibrationSetup(Experiment):
         super(CalibrationSetup, self).__init__(filename=filename)
 
         self.background = None
-        self.cameras = {
-            'camera_microscope': None,
-            'camera_fiber': None,
-        }
+        self.camera_microscope = None
+        self.camera_fiber = None
 
         self.electronics = None
 
@@ -35,30 +33,30 @@ class CalibrationSetup(Experiment):
         self.saving_event = Event()
 
     def initialize(self):
+        """ Initialize both cameras and the electronics. Cameras will start with a continuous run and continuous
+        acquisition, based on the initial configuration.
+        """
         self.initialize_cameras()
         self.initialize_electronics()
         self.servo_off()
-        self.cameras['camera_microscope'].start_free_run()
-        self.cameras['camera_fiber'].start_free_run()
-        self.cameras['camera_fiber'].continuous_reads()
+        self.camera_microscope.start_free_run()
+        self.camera_microscope.continuous_reads()
+        self.camera_fiber.start_free_run()
+        self.camera_fiber.continuous_reads()
 
     def initialize_cameras(self):
         """Assume a specific setup working with baslers and initialize both cameras"""
         self.logger.info('Initializing cameras')
         config_mic = self.config['camera_microscope']
-        self.cameras['camera_microscope'] = Camera(config_mic['init'])
+        self.camera_microscope = Camera(config_mic['init'], initial_config=config_mic['config'])
 
         config_fiber = self.config['camera_fiber']
-        self.cameras['camera_fiber'] = Camera(config_fiber['init'])
+        self.camera_fiber = Camera(config_fiber['init'], initial_config=config_fiber['config'])
 
-        for cam in self.cameras:
+        for cam in (self.camera_fiber, self.camera_microscope):
             self.logger.info(f'Initializing {cam}')
-            self.cameras[cam].initialize()
-            self.logger.debug(f'Configuring {cam} with {self.config[cam]}')
-            config_cam = self.config[cam]['config']
-            config_cam['exposure'] = Q_(config_cam['exposure'])
-            self.cameras[cam].config.update(config_cam)
-            self.cameras[cam].config.apply_all()
+            cam.initialize()
+            self.logger.debug(f'Configuring {cam}')
 
     def initialize_electronics(self):
         """Assumes there are two arduinos connected, one to control a Servo and another to control the rest.
@@ -111,24 +109,28 @@ class CalibrationSetup(Experiment):
         self.electronics.move_mirror(speed, direction, axis)
 
     def get_latest_image(self, camera: str):
-        """ Reads the camera """
-        if camera == 'camera_microscope':
-            if self.saving:
-                return self.cameras[camera].temp_image
-        if camera == 'camera_fiber':
-            return self.cameras[camera].temp_image
+        """ Reads the camera.
 
-        img = self.cameras[camera].read_camera()
-        if len(img) >= 1:
-            return img[-1]
+        .. todo:: This must be changed since it was inherited from the time when both cameras were stored in a dict
+        """
+
+        if camera == 'camera_microscope':
+            return self.camera_microscope.temp_image
+        else:
+            return self.camera_fiber.temp_image
 
     def stop_free_run(self, camera: str):
         """ Stops the free run of the camera.
 
         :param camera: must be the same as specified in the config file, for example 'camera_microscope'
+
+        .. todo:: This must change, since it was inherited from the time both cameras were stored in a dict
         """
         self.logger.info(f'Stopping the free run of {camera}')
-        self.cameras[camera].stop_free_run()
+        if camera == 'camera_microscope':
+            self.camera_microscope.stop_free_run()
+        elif camera == 'camera_fiber':
+            self.camera_fiber.stop_free_run()
 
     def prepare_folder(self) -> str:
         """Creates the folder with the proper date, using the base directory given in the config file"""
@@ -164,20 +166,17 @@ class CalibrationSetup(Experiment):
                             files
         """
         self.logger.info('Acquiring image from the fiber')
-        self.cameras['camera_fiber'].stop_free_run()
-        # self.cameras['camera_fiber'].configure(self.config['camera_fiber'])
-        self.cameras['camera_fiber'].set_exposure(self.config['camera_fiber']['exposure_time'])
-        self.cameras['camera_fiber'].set_gain(self.config['camera_fiber']['gain'])
-        self.cameras['camera_fiber'].set_acquisition_mode(self.cameras['camera_fiber'].MODE_SINGLE_SHOT)
-        self.cameras['camera_fiber'].trigger_camera()
+        self.camera_fiber.stop_free_run()
+        self.camera_fiber.config.apply_all()
+        self.camera_fiber.trigger_camera()
         time.sleep(.25)
-        image = self.cameras['camera_fiber'].read_camera()[-1]
+        image = self.camera_fiber.read_camera()[-1]
         self.logger.info(f'Acquired fiber image, max: {np.max(image)}, min: {np.min(image)}')
 
         filename = self.get_filename(filename)
         np.save(filename, image)
         self.logger.info(f'Saved fiber data to {filename}')
-        self.cameras['camera_fiber'].start_free_run()
+        self.camera_fiber.start_free_run()
 
     def save_image_microscope_camera(self, filename: str) -> None:
         """Saves the image shown on the microscope camera to the given filename.
@@ -186,9 +185,9 @@ class CalibrationSetup(Experiment):
         """
         filename = self.get_filename(filename)
         t0 = time.time()
-        temp_image = self.cameras['camera_microscope'].temp_image
+        temp_image = self.camera_microscope.temp_image
         while temp_image is None:
-            temp_image = self.cameras['camera_fiber'].temp_image
+            temp_image = self.camera_fiber.temp_image
             if time.time() - t0 > 10:
                 raise CameraTimeout("It took too long to get a new frame from the microscope")
         np.save(filename, temp_image)
@@ -200,7 +199,7 @@ class CalibrationSetup(Experiment):
         .. TODO:: This method was designed in order to allow extra work to be done, for example, be sure
             the LED is ON, or use different exposure times.
         """
-        image = self.cameras['camera_fiber'].temp_image
+        image = self.camera_fiber.temp_image
         self.logger.info(f'Saving fiber image, max: {np.max(image)}, min: {np.min(image)}')
         filename = self.get_filename(self.config['info']['filename_fiber'])
         np.save(filename, image)
@@ -224,7 +223,7 @@ class CalibrationSetup(Experiment):
         self.set_laser_power(current_laser_power)
         self.config['laser']['power'] = current_laser_power
         self.config['camera_fiber'] = camera_config.copy()
-        self.cameras['camera_fiber'].start_free_run()
+        self.camera_fiber.start_free_run()
 
     def save_particles_image(self):
         """ Saves the image shown on the microscope. This is only to keep as a reference. This method wraps the
@@ -255,7 +254,7 @@ class CalibrationSetup(Experiment):
         .. TODO:: Judge how precise this is. Perhaps it would be possible to use it instead of the laser reflection on
             the mirror?
         """
-        image = np.copy(self.cameras['camera_fiber'].temp_image)
+        image = np.copy(self.camera_fiber.temp_image)
         brightest = np.unravel_index(image.argmax(), image.shape)
         self.laser_center = self.calculate_gaussian_centroid(image, brightest[0], brightest[1], crop_size=25)
 
@@ -273,7 +272,7 @@ class CalibrationSetup(Experiment):
             Size of the square crop around x, y in order to minimize errors
         """
         self.logger.info(f'Calculating fiber center using ({x}, {y})')
-        image = np.copy(self.cameras['camera_fiber'].temp_image)
+        image = np.copy(self.camera_fiber.temp_image)
         self.fiber_center_position = self.calculate_gaussian_centroid(image, x, y, crop_size)
 
     def set_roi(self, y_min, height):
@@ -284,20 +283,20 @@ class CalibrationSetup(Experiment):
         ----------
         y_min : int
         """
-        self.cameras['camera_microscope'].stop_free_run()
-        current_roi = self.cameras['camera_microscope'].ROI
+        self.camera_microscope.stop_free_run()
+        current_roi = self.camera_microscope.ROI
         new_roi = (current_roi[0], (y_min, height))
-        self.cameras['camera_microscope'].ROI = new_roi
-        self.cameras['camera_microscope'].start_free_run()
+        self.camera_microscope.ROI = new_roi
+        self.camera_microscope.start_free_run()
 
     def clear_roi(self):
-        self.cameras['camera_microscope'].stop_free_run()
+        self.camera_microscope.stop_free_run()
         full_roi = (
-            (0, self.cameras['camera_microscope'].ccd_width),
-            (0, self.cameras['camera_microscope'].ccd_height)
+            (0, self.camera_microscope.ccd_width),
+            (0, self.camera_microscope.ccd_height)
         )
-        self.cameras['camera_microscope'].ROI = full_roi
-        self.cameras['camera_microscope'].start_free_run()
+        self.camera_microscope.ROI = full_roi
+        self.camera_microscope.start_free_run()
 
     def start_saving_images(self):
         self.saving = True
@@ -307,15 +306,15 @@ class CalibrationSetup(Experiment):
         self.saving_process = MovieSaver(
             file,
             self.config['saving']['max_memory'],
-            self.cameras['camera_microscope'].frame_rate,
+            self.camera_microscope.frame_rate,
             self.saving_event,
-            self.cameras['camera_microscope'].new_image.url
+            self.camera_microscope.new_image.url
         )
         time.sleep(1)
-        self.cameras['camera_microscope'].continuous_reads()
+        self.camera_microscope.continuous_reads()
 
     def stop_saving_images(self):
-        self.cameras['camera_microscope'].keep_reading = False
+        self.camera_microscope.keep_reading = False
         self.saving_event.set()
         time.sleep(.05)
         if self.saving_process.is_alive():
@@ -327,5 +326,6 @@ class CalibrationSetup(Experiment):
     def finalize(self):
         if self.saving:
             self.stop_saving_images()
-        self.cameras['camera_fiber'].keep_reading = False
+        self.camera_fiber.keep_reading = False
+        self.camera_microscope.keep_reading = False
         super(CalibrationSetup, self).finalize()

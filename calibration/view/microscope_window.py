@@ -2,7 +2,7 @@ import os
 import time
 
 import numpy as np
-from PyQt5 import uic
+from PyQt5 import uic, QtGui
 from PyQt5.QtCore import QTimer
 from PyQt5.QtWidgets import QMainWindow, QFileDialog
 
@@ -58,6 +58,11 @@ class MicroscopeWindow(QMainWindow):
         self.update_experiment()
 
         self.update_image_timer.start(30)
+        # For debugging purposes
+        self.status_bar = self.statusBar()
+        self.setStatusBar(self.status_bar)
+        self.last_update = time.time()
+        self.updating_times = np.zeros(10)
 
     def update_ui(self):
         """ Method to update the UI with the values given by the experiment. This does not include the camera view """
@@ -66,20 +71,20 @@ class MicroscopeWindow(QMainWindow):
         self.power_slider.setValue(self.experiment.config['laser']['power'])
         self.lcd_laser_power.display(self.experiment.config['laser']['power'])
         self.camera_exposure_line.setText(
-            "{:~}".format(self.experiment.cameras['camera_microscope'].exposure))
-        self.camera_gain_line.setText(str(self.experiment.cameras['camera_microscope'].gain))
+            "{:~}".format(self.experiment.camera_microscope.exposure))
+        self.camera_gain_line.setText(str(self.experiment.camera_microscope.gain))
         self.folder_line.setText(self.experiment.config['info']['folder'])
 
     def update_camera(self):
         """ Updates the properties of the camera. """
 
         logger.info('Updating parameters of the camera')
-        self.experiment.cameras['camera_microscope'].config.update({
+        self.experiment.camera_microscope.config.update({
             'exposure': Q_(self.camera_exposure_line.text()),
             'gain': float(self.camera_gain_line.text()),
         })
-        self.experiment.cameras['camera_microscope'].config.apply_all()
-        self.experiment.cameras['camera_microscope'].start_free_run()
+        self.experiment.camera_microscope.config.apply_all()
+        self.experiment.camera_microscope.start_free_run()
 
     def get_folder(self):
         folder = QFileDialog.getExistingDirectory(
@@ -143,17 +148,26 @@ class MicroscopeWindow(QMainWindow):
         self.experiment.move_mirror(direction=0, axis=2)
 
     def update_image(self):
-        if self.background_box.isChecked() and self.experiment.background is not None:
-            t_image = self.experiment.get_latest_image('camera_microscope')
-            if t_image is not None:
-                img = t_image.astype(np.int16) - self.experiment.background
-                img[img < 0] = 0
-                img = img.astype(np.uint16)
-            else:
-                img = None
-        else:
-            img = self.experiment.get_latest_image('camera_microscope')
+        t0 = time.perf_counter()
+        img = self.experiment.get_latest_image('camera_microscope')
         self.camera_viewer.update_image(img)
+        t1 = time.perf_counter() - t0
+        self.updating_times = np.roll(self.updating_times, 1)
+        self.updating_times[0] = t1
+        self.status_bar.showMessage(f'{np.mean(self.updating_times)*1000}ms')
+        self.last_update = time.time()
+
+        # if self.background_box.isChecked() and self.experiment.background is not None:
+        #     t_image = self.experiment.get_latest_image('camera_microscope')
+        #     if t_image is not None:
+        #         img = t_image.astype(np.int16) - self.experiment.background
+        #         img[img < 0] = 0
+        #         img = img.astype(np.uint16)
+        #     else:
+        #         img = None
+        # else:
+        #     img = self.experiment.get_latest_image('camera_microscope')
+        # self.camera_viewer.update_image(img)
 
     def update_roi(self):
         self.update_image_timer.stop()
@@ -172,6 +186,11 @@ class MicroscopeWindow(QMainWindow):
 
     def stop_saving(self):
         self.experiment.stop_saving_images()
+
+    def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
+        logger.info('Microscope Window Closed')
+        self.update_image_timer.stop()
+        super().closeEvent(a0)
 
 
 if __name__ == '__main__':
