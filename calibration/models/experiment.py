@@ -31,6 +31,7 @@ class CalibrationSetup(Experiment):
         self.laser_center = None
         self.saving = False
         self.saving_event = Event()
+        self.finalized = False
 
     def initialize(self):
         """ Initialize both cameras and the electronics. Cameras will start with a continuous run and continuous
@@ -90,7 +91,7 @@ class CalibrationSetup(Experiment):
         """
         self.logger.info(f'Setting laser power to {power}')
         power = int(power)
-        if power == 10:
+        if power <= 1:
             self.electronics.servo = 0
         else:
             self.electronics.servo = 1
@@ -324,8 +325,19 @@ class CalibrationSetup(Experiment):
         self.saving = False
 
     def finalize(self):
+        if self.finalized:
+           return
+        self.logger.info('Finalizing calibration experiment')
         if self.saving:
+            self.logger.debug('Finalizing the saving images')
             self.stop_saving_images()
         self.camera_fiber.keep_reading = False
         self.camera_microscope.keep_reading = False
+        if self.camera_fiber is not None:
+            self.camera_fiber.finalize()
+        if self.camera_microscope is not None:
+            self.camera_microscope.finalize()
+        self.set_laser_power(0)
+
         super(CalibrationSetup, self).finalize()
+        self.finalized = True
