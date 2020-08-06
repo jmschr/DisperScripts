@@ -10,6 +10,7 @@ from dispertech.models.electronics.arduino import ArduinoModel
 from experimentor import Q_
 from experimentor.core.signal import Signal
 from experimentor.lib.fitgaussian import fitgaussian
+from experimentor.models.action import Action
 from experimentor.models.devices.cameras.basler.basler import BaslerCamera as Camera
 from experimentor.models.devices.cameras.exceptions import CameraTimeout
 from experimentor.models.experiments.base_experiment import Experiment
@@ -33,6 +34,7 @@ class CalibrationSetup(Experiment):
         self.saving_event = Event()
         self.finalized = False
 
+    @Action
     def initialize(self):
         """ Initialize both cameras and the electronics. Cameras will start with a continuous run and continuous
         acquisition, based on the initial configuration.
@@ -68,18 +70,22 @@ class CalibrationSetup(Experiment):
         self.logger.info('Initializing electronics arduino')
         self.electronics.initialize()
 
+    @Action
     def toggle_top_led(self):
         self.electronics.top_led = 0 if self.electronics.top_led else 1
 
+    @Action
     def toggle_fiber_led(self):
         self.electronics.fiber_led = 0 if self.electronics.fiber_led else 1
 
+    @Action
     def servo_on(self):
         """Moves the servo to the ON position."""
         self.logger.info('Setting servo ON')
         self.electronics.move_servo(1)
         self.config['servo']['status'] = 1
 
+    @Action
     def servo_off(self):
         """Moves the servo to the OFF position."""
         self.logger.info('Setting servo OFF')

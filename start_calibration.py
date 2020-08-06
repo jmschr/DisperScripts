@@ -17,6 +17,8 @@ import logging
 #     while app.is_running:
 #         sleep(1)
 #     app.finalize()
+import time
+
 import yaml
 from PyQt5.QtWidgets import QApplication
 
@@ -31,7 +33,9 @@ if __name__ == "__main__":
 
     experiment = CalibrationSetup()
     experiment.load_configuration('dispertech.yml', yaml.UnsafeLoader)
-    experiment.initialize()
+    executor = experiment.initialize()
+    while executor.running():
+        time.sleep(.1)
     app = QApplication([])
     microscope_window = MicroscopeWindow(experiment)
     microscope_window.show()
