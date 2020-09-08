@@ -32,7 +32,7 @@ class MicroscopeWindow(QMainWindow):
         self.motor_speed_line.editingFinished.connect(self.update_experiment)
         self.apply_button.clicked.connect(self.update_camera)
 
-        self.button_top_led.clicked.connect(self.experiment.toggle_top_led)
+        self.button_top_led.clicked.connect(lambda: self.experiment.toggle_top_led())
 
         self.folder_chooser_button.clicked.connect(self.get_folder)
 

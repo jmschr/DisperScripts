@@ -25,7 +25,7 @@ class FiberWindow(QMainWindow):
         self.camera_widget.layout().addWidget(self.camera_viewer)
         self.camera_viewer.clicked_on_image.connect(self.mouse_clicked)
 
-        self.button_fiber_led.clicked.connect(self.experiment.toggle_fiber_led)
+        self.button_fiber_led.clicked.connect(lambda: self.experiment.toggle_fiber_led())
         self.button_fiber_led.clicked.connect(self.update_ui)
 
         self.apply_button.clicked.connect(self.update_camera)
