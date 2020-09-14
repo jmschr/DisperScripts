@@ -33,6 +33,7 @@ class CalibrationSetup(Experiment):
         self.saving = False
         self.saving_event = Event()
         self.finalized = False
+        self.saving_process = None
 
     @Action
     def initialize(self):
@@ -291,12 +292,15 @@ class CalibrationSetup(Experiment):
         y_min : int
         """
         self.camera_microscope.stop_free_run()
+        self.camera_microscope.stop_continuous_reads()
         current_roi = self.camera_microscope.ROI
         new_roi = (current_roi[0], (y_min, height))
         self.camera_microscope.ROI = new_roi
         self.camera_microscope.start_free_run()
+        self.camera_microscope.continuous_reads()
 
     def clear_roi(self):
+        self.camera_microscope.stop_continuous_reads()
         self.camera_microscope.stop_free_run()
         full_roi = (
             (0, self.camera_microscope.ccd_width),
@@ -304,6 +308,7 @@ class CalibrationSetup(Experiment):
         )
         self.camera_microscope.ROI = full_roi
         self.camera_microscope.start_free_run()
+        self.camera_microscope.continuous_reads()
 
     def start_saving_images(self):
         self.saving = True
@@ -324,8 +329,9 @@ class CalibrationSetup(Experiment):
         self.camera_microscope.keep_reading = False
         self.saving_event.set()
         time.sleep(.05)
-        if self.saving_process.is_alive():
-            print('Saving process still alive')
+
+        if self.saving_process is not None and self.saving_process.is_alive():
+            self.logger.warning('Saving process still alive')
             time.sleep(.1)
             # self.stop_saving_images()
         self.saving = False

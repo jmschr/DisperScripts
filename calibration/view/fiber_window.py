@@ -1,6 +1,7 @@
 import os
 import time
 import numpy as np
+import pyqtgraph as pg
 
 from PyQt5 import uic, QtGui
 from PyQt5.QtCore import QTimer
@@ -25,6 +26,11 @@ class FiberWindow(QMainWindow):
         self.camera_widget.layout().addWidget(self.camera_viewer)
         self.camera_viewer.clicked_on_image.connect(self.mouse_clicked)
 
+        self.fiber_center_marker = pg.PlotDataItem(pen=None)
+        self.fiber_center_marker.setBrush(255, 0, 0, 255)
+
+        self.camera_viewer.view.addItem(self.fiber_center_marker)
+
         self.button_fiber_led.clicked.connect(lambda: self.experiment.toggle_fiber_led())
         self.button_fiber_led.clicked.connect(self.update_ui)
 
@@ -48,7 +54,6 @@ class FiberWindow(QMainWindow):
 
         self.updating_times = np.zeros(10)
 
-
     def update_centers(self):
         if self.laser_track.isChecked():
             self.experiment.calculate_laser_center()
@@ -58,6 +63,11 @@ class FiberWindow(QMainWindow):
 
         if self.experiment.fiber_center_position:
             self.fiber_core_position.setText(f"{self.experiment.fiber_center_position[0]:4.2f}, {self.experiment.fiber_center_position[1]:4.2f}")
+
+    def add_fiber_center_mark(self):
+        brush = pg.mkBrush(color=(255, 0, 0))
+        pos = self.experiment.fiber_center_position
+        self.fiber_center_marker.setData([pos[0],], [pos[1],], symbolSize=30, symbol='x', symbolBrush=brush)
 
     def update_ui(self):
         self.camera_exposure_line.setText("{:~}".format(Q_(self.experiment.camera_fiber.exposure)))
@@ -93,6 +103,7 @@ class FiberWindow(QMainWindow):
         """
         logger.info('Calculating center of the fiber')
         self.experiment.calculate_fiber_center(x, y)
+        self.add_fiber_center_mark()
 
     def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
         logger.info('Fiber Window Closed')
