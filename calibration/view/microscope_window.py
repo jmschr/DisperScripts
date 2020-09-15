@@ -11,12 +11,13 @@ from dispertech.view.GUI import resources
 from calibration.view import BASE_DIR_VIEW
 from experimentor import Q_
 from experimentor.lib.log import get_logger
+from experimentor.views.base_view import BaseView
 from experimentor.views.camera.camera_viewer_widget import CameraViewerWidget
 
 logger = get_logger(__name__)
 
 
-class MicroscopeWindow(QMainWindow):
+class MicroscopeWindow(BaseView, QMainWindow):
     def __init__(self, experiment=None):
         super().__init__()
         self.experiment = experiment
@@ -32,11 +33,12 @@ class MicroscopeWindow(QMainWindow):
         self.motor_speed_line.editingFinished.connect(self.update_experiment)
         self.apply_button.clicked.connect(self.update_camera)
 
-        self.button_top_led.clicked.connect(lambda: self.experiment.toggle_top_led())
+        self.connect_to_action(self.button_top_led.clicked, self.experiment.toggle_top_led)
 
         self.folder_chooser_button.clicked.connect(self.get_folder)
 
-        self.save_button.clicked.connect(self.experiment.save_particles_image)
+        self.connect_to_action(self.save_button.clicked, self.experiment.save_particles_image)
+
         self.button_laser.clicked.connect(self.toggle_servo)
         self.power_slider.valueChanged.connect(self.update_laser)
 

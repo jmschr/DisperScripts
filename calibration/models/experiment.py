@@ -201,6 +201,7 @@ class CalibrationSetup(Experiment):
         np.save(filename, temp_image)
         self.logger.info(f"Saved microscope data to {filename}")
 
+    @Action
     def save_fiber_core(self):
         """Saves the image of the fiber core.
 
@@ -213,6 +214,7 @@ class CalibrationSetup(Experiment):
         np.save(filename, image)
         # self.save_image_fiber_camera(self.config['info']['filename_fiber'])
 
+    @Action
     def save_laser_position(self):
         """ Saves an image of the laser on the camera.
 
@@ -233,6 +235,7 @@ class CalibrationSetup(Experiment):
         self.config['camera_fiber'] = camera_config.copy()
         self.camera_fiber.start_free_run()
 
+    @Action
     def save_particles_image(self):
         """ Saves the image shown on the microscope. This is only to keep as a reference. This method wraps the
         actual method `meth:save_iamge_microscope_camera` in case there is a need to set parameters before saving. Or

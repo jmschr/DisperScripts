@@ -10,12 +10,13 @@ from PyQt5.QtWidgets import QMainWindow, QStatusBar
 from calibration.view import BASE_DIR_VIEW
 from experimentor import Q_
 from experimentor.lib.log import get_logger
+from experimentor.views.base_view import BaseView
 from experimentor.views.camera.camera_viewer_widget import CameraViewerWidget
 
 logger = get_logger(__name__)
 
 
-class FiberWindow(QMainWindow):
+class FiberWindow(BaseView, QMainWindow):
     def __init__(self, experiment):
         super(FiberWindow, self).__init__()
         uic.loadUi(os.path.join(BASE_DIR_VIEW, 'GUI', 'Fiber_End_Window.ui'), self)
@@ -31,12 +32,13 @@ class FiberWindow(QMainWindow):
 
         self.camera_viewer.view.addItem(self.fiber_center_marker)
 
-        self.button_fiber_led.clicked.connect(lambda: self.experiment.toggle_fiber_led())
+        self.connect_to_action(self.button_fiber_led.clicked, self.experiment.toggle_fiber_led)
+        self.connect_to_action(self.save_core_button.clicked, self.experiment.save_fiber_core)
+        self.connect_to_action(self.save_laser_button.clicked, self.experiment.save_laser_position)
+
         self.button_fiber_led.clicked.connect(self.update_ui)
 
         self.apply_button.clicked.connect(self.update_camera)
-        self.save_core_button.clicked.connect(self.experiment.save_fiber_core)
-        self.save_laser_button.clicked.connect(self.experiment.save_laser_position)
 
         self.update_image_timer = QTimer()
         self.update_image_timer.timeout.connect(self.update_image)
