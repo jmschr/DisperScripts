@@ -53,6 +53,8 @@ class MicroscopeWindow(BaseView, QMainWindow):
         self.save_movie_button.clicked.connect(self.start_saving)
         self.stop_save_button.clicked.connect(self.stop_saving)
 
+        self.background_box.stateChanged.connect(self.background_toggle)
+
         self.update_image_timer = QTimer()
         self.update_image_timer.timeout.connect(self.update_image)
 
@@ -170,6 +172,9 @@ class MicroscopeWindow(BaseView, QMainWindow):
         # else:
         #     img = self.experiment.get_latest_image('camera_microscope')
         # self.camera_viewer.update_image(img)
+
+    def background_toggle(self, state):
+        self.experiment.remove_background = self.background_box.isChecked()
 
     def update_roi(self):
         self.update_image_timer.stop()

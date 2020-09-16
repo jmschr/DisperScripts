@@ -34,6 +34,7 @@ class CalibrationSetup(Experiment):
         self.saving_event = Event()
         self.finalized = False
         self.saving_process = None
+        self.remove_background = False
 
     @Action
     def initialize(self):
@@ -123,7 +124,16 @@ class CalibrationSetup(Experiment):
         """
 
         if camera == 'camera_microscope':
-            return self.camera_microscope.temp_image
+            tmp_image = self.camera_microscope.temp_image
+            if self.remove_background:
+                if self.background is None:
+                    self.background = np.empty((tmp_image.shape[0], tmp_image.shape[1], 10), dtype=tmp_image.dtype)
+                self.background = np.roll(self.background, -1, 2)
+                self.background[:, :, -1] = tmp_image
+                tmp_image = tmp_image - np.mean(self.background, 2, dtype=tmp_image.dtype)
+            else:
+                self.background = None
+            return tmp_image
         else:
             return self.camera_fiber.temp_image
 
@@ -296,6 +306,7 @@ class CalibrationSetup(Experiment):
         """
         self.camera_microscope.stop_free_run()
         self.camera_microscope.stop_continuous_reads()
+        self.background = None
         current_roi = self.camera_microscope.ROI
         new_roi = (current_roi[0], (y_min, height))
         self.camera_microscope.ROI = new_roi
