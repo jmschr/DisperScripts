@@ -127,12 +127,14 @@ class CalibrationSetup(Experiment):
             tmp_image = self.camera_microscope.temp_image
             if self.remove_background:
                 if self.background is None:
-                    self.background = np.empty((tmp_image.shape[0], tmp_image.shape[1], 10), dtype=tmp_image.dtype)
+                    self.background = np.empty((tmp_image.shape[0], tmp_image.shape[1], 10), dtype=np.int16)
                 self.background = np.roll(self.background, -1, 2)
                 self.background[:, :, -1] = tmp_image
-                tmp_image = tmp_image - np.mean(self.background, 2, dtype=tmp_image.dtype)
+                bkg = np.mean(self.background, 2, dtype=np.int16)
+                tmp_image = tmp_image - bkg
             else:
                 self.background = None
+            # return (tmp_image/2**4).astype(np.uint8)
             return tmp_image
         else:
             return self.camera_fiber.temp_image
@@ -336,8 +338,8 @@ class CalibrationSetup(Experiment):
             self.saving_event,
             self.camera_microscope.new_image.url
         )
-        time.sleep(1)
-        self.camera_microscope.continuous_reads()
+        # time.sleep(1)
+        # self.camera_microscope.continuous_reads()
 
     def stop_saving_images(self):
         self.camera_microscope.keep_reading = False
