@@ -30,12 +30,12 @@ from experimentor.lib.log import log_to_screen, get_logger
 if __name__ == "__main__":
     logger = get_logger()
     handler = log_to_screen(logger=logger)
-
     experiment = CalibrationSetup()
     experiment.load_configuration('dispertech.yml', yaml.UnsafeLoader)
     executor = experiment.initialize()
     while executor.running():
         time.sleep(.1)
+
     app = QApplication([])
     microscope_window = MicroscopeWindow(experiment)
     microscope_window.show()

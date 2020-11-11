@@ -317,6 +317,20 @@
         </widget>
        </item>
        <item>
+        <widget class="QPushButton" name="start_binning_button">
+         <property name="text">
+          <string>Start Binning</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="stop_binning_button">
+         <property name="text">
+          <string>Stop Binning</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QPushButton" name="apply_button">
          <property name="text">
           <string>Apply</string>

@@ -129,11 +129,14 @@ class CalibrationSetup(Experiment):
             tmp_image = self.camera_microscope.temp_image
             if self.remove_background:
                 if self.background is None:
-                    self.background = np.empty((tmp_image.shape[0], tmp_image.shape[1], 10), dtype=np.int16)
+                    self.background = np.empty((tmp_image.shape[0], tmp_image.shape[1], 10), dtype=np.uint16)
                 self.background = np.roll(self.background, -1, 2)
                 self.background[:, :, -1] = tmp_image
-                bkg = np.mean(self.background, 2, dtype=np.int16)
-                tmp_image = tmp_image - bkg
+                bkg = np.mean(self.background, 2, dtype=np.uint16)
+                # tmp_image = (tmp_image.astype(np.int16) - bkg).clip(0, 2**16-1).astype(np.uint16)
+                ttmp_image = tmp_image - bkg
+                ttmp_image[bkg>tmp_image] = 0
+                tmp_image = ttmp_image
             else:
                 self.background = None
             # return (tmp_image/2**4).astype(np.uint8)
@@ -214,6 +217,24 @@ class CalibrationSetup(Experiment):
                 raise CameraTimeout("It took too long to get a new frame from the microscope")
         np.save(filename, temp_image)
         self.logger.info(f"Saved microscope data to {filename}")
+
+    @Action
+    def start_binning(self):
+        self.camera_microscope.stop_continuous_reads()
+        self.camera_microscope.stop_free_run()
+        self.background = None  # This is to prevent shape mismatch between before and after
+        self.camera_microscope.binning_y = 4
+        self.camera_microscope.start_free_run()
+        self.camera_microscope.continuous_reads()
+
+    @Action
+    def stop_binning(self):
+        self.camera_microscope.stop_continuous_reads()
+        self.camera_microscope.stop_free_run()
+        self.background = None  # This is to prevent shape mismatch between before and after
+        self.camera_microscope.binning_y = 1
+        self.camera_microscope.start_free_run()
+        self.camera_microscope.continuous_reads()
 
     @Action
     def save_fiber_core(self):
@@ -361,7 +382,7 @@ class CalibrationSetup(Experiment):
         """
         self.camera_microscope.stop_free_run()
         self.camera_microscope.stop_continuous_reads()
-        self.background = None
+        self.background = None  # This is to prevent shape mismatch between before and after
         current_roi = self.camera_microscope.ROI
         new_roi = (current_roi[0], (y_min, height))
         self.camera_microscope.ROI = new_roi
@@ -371,6 +392,7 @@ class CalibrationSetup(Experiment):
     def clear_roi(self):
         self.camera_microscope.stop_continuous_reads()
         self.camera_microscope.stop_free_run()
+        self.background = None  # This is to prevent shape mismatch between before and after
         full_roi = (
             (0, self.camera_microscope.ccd_width),
             (0, self.camera_microscope.ccd_height)

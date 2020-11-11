@@ -38,6 +38,8 @@ class MicroscopeWindow(BaseView, QMainWindow):
         self.folder_chooser_button.clicked.connect(self.get_folder)
 
         self.connect_to_action(self.save_button.clicked, self.experiment.save_particles_image)
+        self.connect_to_action(self.start_binning_button.clicked,self.experiment.start_binning)
+        self.connect_to_action(self.stop_binning_button.clicked,self.experiment.stop_binning)
 
         self.button_laser.clicked.connect(self.toggle_servo)
         self.power_slider.valueChanged.connect(self.update_laser)
