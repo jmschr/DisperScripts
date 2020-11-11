@@ -10,11 +10,8 @@ electronics:
   arduino:
     device: 0
 
-servo:
-  status: 0  # 0: Off, 1: On
-
 laser:
-  power: 20
+  power: 0
 
 mirror:
   speed: 1
@@ -59,7 +56,7 @@ camera_fiber:
     gain: 0.
     auto_exposure: Off
     auto_gain: Off
-    pixel_format: Mono12
+    pixel_format: Mono8
     binning: [1, 1] # Binning
     ROI: [[1, 1280], [1, 960]]
 

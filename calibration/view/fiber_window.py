@@ -23,6 +23,8 @@ class FiberWindow(BaseView, QMainWindow):
 
         self.experiment = experiment
 
+        self.draw_center = False  # Used to decide whether to calculate and draw the center of the fiber (in real-time)
+
         self.camera_viewer = CameraViewerWidget(parent=self)
         self.camera_widget.layout().addWidget(self.camera_viewer)
         self.camera_viewer.clicked_on_image.connect(self.mouse_clicked)
@@ -52,7 +54,7 @@ class FiberWindow(BaseView, QMainWindow):
 
         self.update_ui()
         self.update_image_timer.start(50)
-        self.update_centers_timer.start(50)
+        self.update_centers_timer.start(150)
 
         self.updating_times = np.zeros(10)
 
@@ -61,15 +63,19 @@ class FiberWindow(BaseView, QMainWindow):
             self.experiment.calculate_laser_center()
 
         if self.experiment.laser_center:
-            self.laser_center_position.setText(f"{self.experiment.laser_center[0]:4.2f}, {self.experiment.laser_center[1]:4.2f}")
+            self.laser_center_position.setText(
+                f"{self.experiment.laser_center[0]:4.2f}, "
+                f"{self.experiment.laser_center[1]:4.2f}")
 
         if self.experiment.fiber_center_position:
-            self.fiber_core_position.setText(f"{self.experiment.fiber_center_position[0]:4.2f}, {self.experiment.fiber_center_position[1]:4.2f}")
+            self.fiber_core_position.setText(
+                f"{self.experiment.fiber_center_position[0]:4.2f}, "
+                f"{self.experiment.fiber_center_position[1]:4.2f}")
 
     def add_fiber_center_mark(self):
         brush = pg.mkBrush(color=(255, 0, 0))
         pos = self.experiment.fiber_center_position
-        self.fiber_center_marker.setData([pos[0],], [pos[1],], symbolSize=30, symbol='x', symbolBrush=brush)
+        self.fiber_center_marker.setData([pos[0], ], [pos[1], ], symbolSize=50, symbol='x', symbolBrush=brush)
 
     def update_ui(self):
         self.camera_exposure_line.setText("{:~}".format(Q_(self.experiment.camera_fiber.exposure)))
@@ -104,7 +110,7 @@ class FiberWindow(BaseView, QMainWindow):
         default signal to get directly the coordinates of the mouse clicked in pixels of the image.
         """
         logger.info('Calculating center of the fiber')
-        self.experiment.calculate_fiber_center(x, y)
+        self.experiment.calculate_fiber_center_cv(self.experiment.get_latest_image('camera_fiber'))
         self.add_fiber_center_mark()
 
     def closeEvent(self, a0: QtGui.QCloseEvent) -> None:

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>767</width>
-    <height>687</height>
+    <width>1077</width>
+    <height>862</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,14 +18,14 @@
     <item>
      <widget class="QWidget" name="widget" native="true">
       <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-        <horstretch>0</horstretch>
+       <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+        <horstretch>200</horstretch>
         <verstretch>0</verstretch>
        </sizepolicy>
       </property>
       <property name="maximumSize">
        <size>
-        <width>150</width>
+        <width>200</width>
         <height>16777215</height>
        </size>
       </property>
@@ -103,6 +103,13 @@
         <widget class="QCheckBox" name="laser_track">
          <property name="text">
           <string>Laser</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="fiber_center_checkbox">
+         <property name="text">
+          <string>Fiber Center</string>
          </property>
         </widget>
        </item>
