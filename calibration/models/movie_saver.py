@@ -11,14 +11,13 @@ from experimentor.core.meta import ExperimentorProcess
 class MovieSaver(ExperimentorProcess):
     def __init__(self, file, max_memory, frame_rate, saving_event, url, topic=''):
         super().__init__()
-        print(url)
         self.file = file
         self.max_memory = max_memory
         self.saving_event = saving_event
         self.frame_rate = frame_rate
         self.topic = topic
         self.url = url
-
+        self.stop_keyword = "MovieSaverStop"
         self.start()
 
     def run(self) -> None:
@@ -41,9 +40,12 @@ class MovieSaver(ExperimentorProcess):
                 topic = socket.recv_string()
                 metadata = socket.recv_json(flags=0)
                 msg = socket.recv(flags=0, copy=True, track=False)
+                if not metadata.get('numpy', False):
+                    print('Got stop keyword')
+                    break
                 buf = memoryview(msg)
                 img = np.frombuffer(buf, dtype=metadata['dtype'])
-                img = img.reshape(metadata['shape']).copy()
+                img = img.reshape(metadata['shape'])
 
                 if first:  # First time it runs, creates the dataset
                     x = img.shape[0]
@@ -54,12 +56,21 @@ class MovieSaver(ExperimentorProcess):
                                             compression='gzip', compression_opts=1,
                                             dtype=img.dtype)  # The images are going to be stacked along the z-axis.
                     first = False
-
                     meta = {
                         'fps': self.frame_rate,
-                        'start': time.time()
+                        'start': time.time(),
+                        'allocate': allocate,
                     }
-                d[:, :, i] = img
+                    old_img = np.zeros((x, 1))
+                    metadata = json.dumps(meta)
+                    mdset = g.create_dataset('metadata', data=metadata.encode("utf-8", "ignore"))
+                d[:, :, i] = np.copy(img)
+
+                if np.all(old_img == img):
+                    print('Repeated Frame!!!')
+                    break
+                old_img = np.copy(img)
+
                 i += 1
                 if i == allocate:
                     dset[:, :, j:j + allocate] = d
@@ -75,5 +86,6 @@ class MovieSaver(ExperimentorProcess):
                 'frames': j+i,
                 'allocate': allocate,
             })
-            meta = json.dumps(meta)
-            g.create_dataset('metadata', data=meta.encode("ascii", "ignore"))
+            metadata = json.dumps(meta)
+            mdset[()] = metadata.encode("utf-8", "ignore")
+

@@ -417,11 +417,15 @@ class CalibrationSetup(Experiment):
             self.config['saving']['max_memory'],
             self.camera_microscope.frame_rate,
             self.saving_event,
-            self.camera_microscope.new_image.url
+            self.camera_microscope.new_image.url,
+            'new_image',
         )
 
     def stop_saving_images(self):
-        self.saving_event.set()
+        self.camera_microscope.new_image.emit('stop')
+        # self.emit('new_image', 'stop')
+
+        # self.saving_event.set()
         time.sleep(.05)
 
         if self.saving_process is not None and self.saving_process.is_alive():
@@ -436,6 +440,7 @@ class CalibrationSetup(Experiment):
         if self.saving:
             self.logger.debug('Finalizing the saving images')
             self.stop_saving_images()
+        self.saving_event.set()
         self.camera_fiber.keep_reading = False
         self.camera_microscope.keep_reading = False
         if self.camera_fiber is not None:
