@@ -40,7 +40,7 @@ saving:
   filename_waterfall: Waterfall
   filename_trajectory: Trajectory
   filename_log: Log
-  max_memory: 2000 # In megabytes
+  max_memory: 500 # In megabytes
 
 GUI:
   length_waterfall: 20 # Total length of the Waterfall (lines)
