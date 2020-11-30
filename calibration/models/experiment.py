@@ -45,11 +45,13 @@ class CalibrationSetup(Experiment):
         """
         self.initialize_cameras()
         self.initialize_electronics()
-        self.servo_off()
+        self.logger.info('Starting free runs and continuous reads')
         self.camera_microscope.start_free_run()
         self.camera_microscope.continuous_reads()
         self.camera_fiber.start_free_run()
         self.camera_fiber.continuous_reads()
+        self.servo_off()
+
 
     def initialize_cameras(self):
         """Assume a specific setup working with baslers and initialize both cameras"""
@@ -418,7 +420,8 @@ class CalibrationSetup(Experiment):
             self.camera_microscope.frame_rate,
             self.saving_event,
             self.camera_microscope.new_image.url,
-            'new_image',
+            topic='new_image',
+            metadata=self.camera_microscope.config.all(),
         )
 
     def stop_saving_images(self):
