@@ -9,6 +9,8 @@ user:
 electronics:
   arduino:
     device: 0
+  vertical_axis: 1
+  horizontal_axis: 2
 
 laser:
   power: 0

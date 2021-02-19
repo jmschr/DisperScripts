@@ -135,7 +135,7 @@
                <x>30</x>
                <y>60</y>
                <width>31</width>
-               <height>28</height>
+               <height>31</height>
               </rect>
              </property>
              <property name="sizePolicy">
@@ -156,9 +156,9 @@
              <property name="geometry">
               <rect>
                <x>60</x>
-               <y>30</y>
+               <y>27</y>
                <width>31</width>
-               <height>28</height>
+               <height>31</height>
               </rect>
              </property>
              <property name="text">
@@ -290,13 +290,6 @@
         <widget class="QLineEdit" name="camera_gain_line"/>
        </item>
        <item>
-        <widget class="QCheckBox" name="background_box">
-         <property name="text">
-          <string>Background</string>
-         </property>
-        </widget>
-       </item>
-       <item>
         <widget class="QWidget" name="widget_2" native="true">
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
@@ -391,6 +384,13 @@
     <item>
      <widget class="QWidget" name="camera_widget" native="true">
       <layout class="QVBoxLayout" name="verticalLayout_4">
+       <item>
+        <widget class="QCheckBox" name="background_box">
+         <property name="text">
+          <string>Background</string>
+         </property>
+        </widget>
+       </item>
        <item>
         <widget class="QLabel" name="label">
          <property name="text">
