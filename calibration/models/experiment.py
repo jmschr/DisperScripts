@@ -52,7 +52,6 @@ class CalibrationSetup(Experiment):
         self.camera_fiber.continuous_reads()
         self.servo_off()
 
-
     def initialize_cameras(self):
         """Assume a specific setup working with baslers and initialize both cameras"""
         self.logger.info('Initializing cameras')
@@ -114,7 +113,6 @@ class CalibrationSetup(Experiment):
     def move_mirror(self, direction: int, axis: int):
         """ Moves the mirror connected to the board
 
-        :param int speed: Speed, from 0 to 2^6.
         :param direction: 0 or 1, depending on which direction to move the mirror
         :param axis: 1 or 2, to select the axis
         """
