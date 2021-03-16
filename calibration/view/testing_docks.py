@@ -29,9 +29,9 @@ class MainWindow(MainWindowUI,MainWindowBase):
 
         # Create example content label - this can be any application specific
         # widget
-        l=QLabel()
+        l  =QLabel()
         l.setWordWrap(True)
-        l.setAlignment(Qt.AlignTop | Qt.AlignLeft);
+        l.setAlignment(Qt.AlignTop | Qt.AlignLeft)
         l.setText("Lorem ipsum dolor sit amet, consectetuer adipiscing elit. ")
 
         # Create a dock widget with the title Label 1 and set the created label
