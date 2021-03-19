@@ -16,8 +16,18 @@ from experimentor.views.camera.camera_viewer_widget import CameraViewerWidget
 logger = get_logger(__name__)
 
 
+
+
 class FiberWindow(BaseView, QMainWindow):
     def __init__(self, experiment):
+        # m lines of code upto next #m will be removed since the new code in the mouse_clicked make this variable Unnecessary
+        # multiply_array_imported is a variable that ensures that the multiply array is only imported once
+        # (from the file where it is saved)
+        multiply_array_imported = 0
+        # After being imported (see mouse_clicked), the value is changed to 1.
+        #m
+
+
         super(FiberWindow, self).__init__()
         uic.loadUi(os.path.join(BASE_DIR_VIEW, 'GUI', 'Fiber_End_Window.ui'), self)
 
@@ -75,7 +85,8 @@ class FiberWindow(BaseView, QMainWindow):
     def add_fiber_center_mark(self):
         brush = pg.mkBrush(color=(255, 0, 0))
         pos = self.experiment.fiber_center_position
-        self.fiber_center_marker.setData([pos[0], ], [pos[1], ], symbolSize=50, symbol='x', symbolBrush=brush)
+        #The 0 and 1 are switched places in the line of code below at 16/3, yet to bechecked if correct
+        self.fiber_center_marker.setData([pos[1], ], [pos[0], ], symbolSize=50, symbol='x', symbolBrush=brush)
 
     def update_ui(self):
         self.camera_exposure_line.setText("{:~}".format(Q_(self.experiment.camera_fiber.exposure)))
@@ -110,7 +121,12 @@ class FiberWindow(BaseView, QMainWindow):
         default signal to get directly the coordinates of the mouse clicked in pixels of the image.
         """
         logger.info('Calculating center of the fiber')
-        self.experiment.calculate_fiber_center_cv(self.experiment.get_latest_image('camera_fiber'))
+
+        #m
+        self.experiment.Code1dot7for_implementation(self.experiment.get_latest_image('camera_fiber'), \
+                                                    self.experiment.multiply_array)
+
+        #The red X is shown in the figure at the fiber core location
         self.add_fiber_center_mark()
 
     def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
