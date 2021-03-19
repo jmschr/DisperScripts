@@ -5,7 +5,7 @@ import numpy as np
 from PyQt5 import uic, QtGui
 from PyQt5.QtCore import QTimer
 from PyQt5.QtWidgets import QMainWindow, QFileDialog
-
+import pyqtgraph as pg
 from dispertech.view.GUI import resources
 
 from calibration.view import BASE_DIR_VIEW
@@ -28,6 +28,10 @@ class MicroscopeWindow(BaseView, QMainWindow):
 
         self.camera_viewer = CameraViewerWidget(parent=self)
         self.camera_widget.layout().addWidget(self.camera_viewer)
+
+        self.cross_cut_plot_widget = pg.PlotWidget()
+        self.cross_cut_widget.layout().addWidget(self.cross_cut_plot_widget)
+        self.cross_cut_plot = self.cross_cut_plot_widget.getPlotItem().plot([0, ], [0,])
 
         self.cartridge_line.editingFinished.connect(self.update_experiment)
         self.motor_speed_line.editingFinished.connect(self.update_experiment)
@@ -163,6 +167,10 @@ class MicroscopeWindow(BaseView, QMainWindow):
         self.updating_times[0] = t1
         self.status_bar.showMessage(f'{np.mean(self.updating_times)*1000}ms')
         self.last_update = time.time()
+        cross_cut = np.sum(img, 2)
+        y = np.arange(0, len(cross_cut))
+        self.cross_cut_plot.setData(cross_cut, y)
+
 
         # if self.background_box.isChecked() and self.experiment.background is not None:
         #     t_image = self.experiment.get_latest_image('camera_microscope')
