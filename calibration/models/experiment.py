@@ -63,7 +63,7 @@ class CalibrationSetup(Experiment):
         """Here the multiply array is either imported or created (if not exiting or the wrong size)."""
 
         self.logger.info('Initializing multiply array')
-        
+
         #height and width might have to be changed position in the future
         height = len(self.get_latest_image('camera_fiber'))
         width = len(self.get_latest_image('camera_fiber')[0])
@@ -147,8 +147,6 @@ class CalibrationSetup(Experiment):
         self.logger.debug(multiply_array)
         self.multiply_array = multiply_array
 
-
-
     def initialize_cameras(self):
         """Assume a specific setup working with baslers and initialize both cameras"""
         self.logger.info('Initializing cameras')
@@ -210,7 +208,6 @@ class CalibrationSetup(Experiment):
     def move_mirror(self, direction: int, axis: int):
         """ Moves the mirror connected to the board
 
-        :param int speed: Speed, from 0 to 2^6.
         :param direction: 0 or 1, depending on which direction to move the mirror
         :param axis: 1 or 2, to select the axis
         """
