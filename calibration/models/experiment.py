@@ -46,6 +46,7 @@ class CalibrationSetup(Experiment):
         """ Initialize both cameras and the electronics. Cameras will start with a continuous run and continuous
         acquisition, based on the initial configuration.
         """
+        self.initilize_multiply_array()  # m
         self.initialize_cameras()
         self.initialize_electronics()
         self.logger.info('Starting free runs and continuous reads')
@@ -56,9 +57,9 @@ class CalibrationSetup(Experiment):
         self.servo_off()
 
         time.sleep(1)  #m Without the sleep below initialize_multiply_array does not work
-        self.initilize_multiply_array() #m
 
 
+    @Action
     def initilize_multiply_array(self,power = 2.5): #m
         """Here the multiply array is either imported or created (if not exiting or the wrong size)."""
 
@@ -95,7 +96,7 @@ class CalibrationSetup(Experiment):
         # Trying if file exists
         try:
             # For now multiply_array is global (this will be changed later)
-            self.logger.debug('Try if the multiply array file exists in: ', file_path)
+            self.logger.info('Try if the multiply array file exists in: ', file_path)
             multiply_array = np.load(file_path)
 
         except IOError:
@@ -120,7 +121,7 @@ class CalibrationSetup(Experiment):
             self.logger.debug('Save multiply array')
             np.save(file_path, multiply_array)
         else:
-            self.logger.debug('File existing in folder')
+            self.logger.info('File existing in folder')
             if len(multiply_array[0]) != width or len(multiply_array) != height:
                 # If the multiply_array does exist but has the wrong dimensions, a multiply_array with
                 # the propper dimesions is created and saved.
