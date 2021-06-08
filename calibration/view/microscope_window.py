@@ -176,9 +176,9 @@ class MicroscopeWindow(BaseView, QMainWindow):
         self.updating_times[0] = t1
         self.status_bar.showMessage(f'{np.mean(self.updating_times)*1000}ms')
         self.last_update = time.time()
-        cross_cut = np.sum(img, 2)
+        cross_cut = np.sum(img, 0)
         y = np.arange(0, len(cross_cut))
-        self.cross_cut_plot.setData(cross_cut, y)
+        self.cross_cut_plot.setData(cross_cut, y[::-1])
 
 
         # if self.background_box.isChecked() and self.experiment.background is not None:
