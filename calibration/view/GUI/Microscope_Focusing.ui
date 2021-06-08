@@ -93,6 +93,26 @@
            <number>0</number>
           </property>
           <item>
+           <widget class="QWidget" name="widget_3" native="true">
+            <layout class="QHBoxLayout" name="horizontalLayout_3">
+             <item>
+              <widget class="QPushButton" name="button_focus_plus">
+               <property name="text">
+                <string>+</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="button_focus_minus">
+               <property name="text">
+                <string>-</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
            <widget class="QWidget" name="arrows_widget" native="true">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="MinimumExpanding">
@@ -125,7 +145,7 @@
               <string/>
              </property>
              <property name="icon">
-              <iconset resource="resources.qrc">
+              <iconset>
                <normaloff>:/icons/Icons/arrow_top.png</normaloff>:/icons/Icons/arrow_top.png</iconset>
              </property>
             </widget>
@@ -148,7 +168,7 @@
               <string/>
              </property>
              <property name="icon">
-              <iconset resource="resources.qrc">
+              <iconset>
                <normaloff>:/icons/Icons/arrow_bottom.png</normaloff>:/icons/Icons/arrow_bottom.png</iconset>
              </property>
             </widget>
@@ -165,7 +185,7 @@
               <string/>
              </property>
              <property name="icon">
-              <iconset resource="resources.qrc">
+              <iconset>
                <normaloff>:/icons/Icons/arrow_right.png</normaloff>:/icons/Icons/arrow_right.png</iconset>
              </property>
             </widget>
@@ -182,7 +202,7 @@
               <string/>
              </property>
              <property name="icon">
-              <iconset resource="resources.qrc">
+              <iconset>
                <normaloff>:/icons/Icons/arrow_left.png</normaloff>:/icons/Icons/arrow_left.png</iconset>
              </property>
             </widget>
@@ -301,7 +321,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset resource="resources.qrc">
+             <iconset>
               <normaloff>:/icons/Icons/folder-open.png</normaloff>:/icons/Icons/folder-open.png</iconset>
             </property>
            </widget>
@@ -459,8 +479,6 @@
    </property>
   </action>
  </widget>
- <resources>
-  <include location="resources.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

@@ -52,6 +52,8 @@ class MicroscopeWindow(BaseView, QMainWindow):
         self.button_right.clicked.connect(self.move_right)
         self.button_up.clicked.connect(self.move_up)
         self.button_down.clicked.connect(self.move_down)
+        self.button_focus_minus.clicked.connect(self.move_focus_minus)
+        self.button_focus_plus.clicked.connect(self.move_focus_plus)
 
         self.apply_roi_button.clicked.connect(self.update_roi)
         self.clear_roi_button.clicked.connect(self.clear_roi)
@@ -157,6 +159,13 @@ class MicroscopeWindow(BaseView, QMainWindow):
 
     def move_down(self):
         self.experiment.move_mirror(direction=0, axis=self.experiment.config['electronics']['vertical_axis'])
+
+    def move_focus_plus(self):
+        self.experiment.move_mirror(direction=0, axis=3)
+
+    def move_focus_minus(self):
+        self.experiment.move_mirror(direction=1, axis=3)
+
 
     def update_image(self):
         t0 = time.perf_counter()

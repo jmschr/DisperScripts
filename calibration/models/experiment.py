@@ -1,9 +1,7 @@
 import os
-import time
 from datetime import datetime
 from multiprocessing import Event
 
-import cv2
 import numpy as np
 import copy as copy #m required in Code1dot7for_implementation
 
@@ -417,62 +415,6 @@ class CalibrationSetup(Experiment):
         self.fiber_center_position = self.calculate_gaussian_centroid(image, x, y, crop_size)
         return [x,y] #m
 
-    def calculate_fiber_center_cv(self, img):
-        #m #self.fiber_center_position = [100,100] #m
-        import random #m
-        x = int(100*random.random()) #m
-        y = int(100 * random.random())  # m
-        self.fiber_center_position = [x, y] #m
-
-        """ Calculates the fiber center by using a threshold and the minimum circle that encloses the fiber tip.
-
-        Parameters
-        ----------
-        img : np.array
-            The image on which the algorithm will act
-
-        Returns
-        -------
-        A modified image that displays the center and the circle that surrounds the fibers
-        """
-        if img.dtype == np.int16 or img.dtype == np.uint16:
-            img_8 = (img/np.max(img) * 256).astype('uint8')
-        else:
-            img_8 = img.astype(np.uint8)
-
-        img = np.copy(img_8.T)
-
-        ret, thresh = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-        thresh = cv2.bitwise_not(thresh)
-        element = cv2.getStructuringElement(shape=cv2.MORPH_ELLIPSE, ksize=(5, 5))
-        morph_img = thresh.copy()
-        out = cv2.morphologyEx(src=thresh, op=cv2.MORPH_CLOSE, kernel=element, dst=morph_img)
-
-        ret, thresh = cv2.threshold(out, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-        thresh = cv2.bitwise_not(thresh)
-        contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-        #if len(contours) < 1:
-        self.logger.info('No contours found')
-        return img
-        areas = [cv2.contourArea(c) for c in contours]
-        sorted_areas = np.sort(areas)
-        cnt = contours[areas.index(sorted_areas[-1])]  # the biggest contour
-
-        # min circle
-        (x, y), radius = cv2.minEnclosingCircle(cnt)
-
-        print('x,y',x,y) #m
-        radius = int(radius)
-        self.logger.info(f'Calculated fiber center: ({x}, {y})')
-
-        self.fiber_center_position = (x, y)
-        self.fiber_radius = radius
-
-        # test_img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
-        # cv2.circle(test_img, (int(x), int(y)), radius, (255, 0, 0), 2)
-        # cv2.circle(test_img, (int(x), int(y)), 5, (255, 0, 0), 2)
-        # self.image_center_contour = test_img
-        # return test_img
 
     def set_roi(self, y_min, height):
         """ Sets up the ROI of the microscope camera. It assumes the user only crops the vertical direction, since the
