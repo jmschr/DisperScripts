@@ -20,12 +20,14 @@ class MovieSaver(ExperimentorProcess):
         self.topic = topic
         self.url = url
         self.stop_keyword = "MovieSaverStop"
+        self.last_timestamp = None
         if metadata is None:
             metadata = {}
         for key, value in metadata.items():
             if isinstance(value, Q_):
                 metadata[key] = str(value)
         self.metadata = metadata
+        self.timestamps = np.zeros((1000, ))
         self.start()
 
     def run(self) -> None:
@@ -55,6 +57,18 @@ class MovieSaver(ExperimentorProcess):
                 buf = memoryview(msg)
                 img = np.frombuffer(buf, dtype=metadata['dtype'])
                 img = img.reshape(metadata['shape'], order="F")
+                self.timestamps = np.roll(self.timestamps, -1)
+                if self.last_timestamp is None:
+                    self.last_timestamp = metadata.get('timestamp', None)
+                else:
+                    timestamp = metadata.get('timestamp', None)
+                    if (diff := timestamp - self.last_timestamp) > Q_('10ms').m_as('ps'):
+                        n_frames = diff / Q_('5ms').m_as('ps')
+                        self.logger.warning(f'{self} Missed at least {n_frames:.0f} frames')
+                        self.logger.warning(self.timestamps)
+                    self.last_timestamp = timestamp
+                self.timestamps[-1] = self.last_timestamp
+
                 # Using byte order F gives the proper shape, but it is camera-dependent
                 # This works fine for Basler, but need to keep an eye for the future
                 # TODO: standardize the byte-order for camera frames, are they always Fortran?

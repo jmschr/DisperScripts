@@ -75,10 +75,10 @@ camera_microscope:
     pixel_format: Mono12
     auto_exposure: Off
     auto_gain: Off
-    buffer_size: 200MB
+    buffer_size: 1000MB
 
 movie:
-  buffer_length: 1000 # Frames
+  buffer_length: 5000 # Frames
 
 tracking:
   locate:
