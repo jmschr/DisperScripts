@@ -8,7 +8,7 @@ user:
 
 electronics:
   arduino:
-    device: 5
+    device: 0
   vertical_axis: 1
   horizontal_axis: 2
 

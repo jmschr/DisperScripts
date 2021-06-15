@@ -10,32 +10,26 @@ from PyQt5 import QtGui, uic
 from PyQt5.QtCore import QTimer
 from PyQt5.QtWidgets import QFileDialog, QMainWindow
 
-from calibration.view import BASE_DIR_VIEW
+from LightSheet.view import BASE_DIR_VIEW
 
 logger = get_logger(__name__)
 
 
-class MicroscopeWindow(BaseView, QMainWindow):
+class LightsheetWindow(BaseView, QMainWindow):
     def __init__(self, experiment):
         super().__init__()
         self.experiment = experiment
         self.button_laser_status = 0
 
-        filename = os.path.join(BASE_DIR_VIEW, 'GUI', 'Microscope_Focusing.ui')
+        filename = os.path.join(BASE_DIR_VIEW, 'GUI', 'Lightsheet_Window.ui')
         uic.loadUi(filename, self)
 
         self.camera_viewer = CameraViewerWidget(parent=self)
         self.camera_widget.layout().addWidget(self.camera_viewer)
 
-        self.cross_cut_plot_widget = pg.PlotWidget()
-        self.cross_cut_widget.layout().addWidget(self.cross_cut_plot_widget)
-        self.cross_cut_plot = self.cross_cut_plot_widget.getPlotItem().plot([0, ], [0,])
-
         self.cartridge_line.editingFinished.connect(self.update_experiment)
         self.motor_speed_line.editingFinished.connect(self.update_experiment)
         self.apply_button.clicked.connect(self.update_camera)
-
-        self.connect_to_action(self.button_top_led.clicked, self.experiment.toggle_top_led)
 
         self.folder_chooser_button.clicked.connect(self.get_folder)
 
@@ -43,15 +37,10 @@ class MicroscopeWindow(BaseView, QMainWindow):
         self.connect_to_action(self.start_binning_button.clicked,self.experiment.start_binning)
         self.connect_to_action(self.stop_binning_button.clicked,self.experiment.stop_binning)
 
-        self.button_laser.clicked.connect(self.toggle_servo)
-        self.power_slider.valueChanged.connect(self.update_laser)
-
         self.button_left.clicked.connect(self.move_left)
         self.button_right.clicked.connect(self.move_right)
         self.button_up.clicked.connect(self.move_up)
         self.button_down.clicked.connect(self.move_down)
-        self.button_focus_minus.clicked.connect(self.move_focus_minus)
-        self.button_focus_plus.clicked.connect(self.move_focus_plus)
 
         self.apply_roi_button.clicked.connect(self.update_roi)
         self.clear_roi_button.clicked.connect(self.clear_roi)
@@ -78,8 +67,6 @@ class MicroscopeWindow(BaseView, QMainWindow):
         """ Method to update the UI with the values given by the experiment. This does not include the camera view """
         self.cartridge_line.setText(str(self.experiment.config['info']['cartridge_number']))
         self.motor_speed_line.setText(str(self.experiment.config['mirror']['speed']))
-        self.power_slider.setValue(self.experiment.config['laser']['power'])
-        self.lcd_laser_power.display(self.experiment.config['laser']['power'])
         self.camera_exposure_line.setText(
             "{:~}".format(self.experiment.camera_microscope.exposure))
         self.camera_gain_line.setText(str(self.experiment.camera_microscope.gain))
@@ -120,32 +107,6 @@ class MicroscopeWindow(BaseView, QMainWindow):
 
         self.experiment.config['info']['folder'] = self.folder_line.text()
 
-    def update_laser(self, power):
-        power = int(power)
-        # Open the servo if increasing the power
-        if power > 0:
-            self.experiment.servo_on()
-            self.button_laser.setText('Switch OFF')
-            self.button_laser_status = 1
-        else:
-            self.experiment.servo_off()
-            self.button_laser.setText('Switch ON')
-            self.button_laser_status = 0
-
-        self.lcd_laser_power.display(power)
-        self.experiment.set_laser_power(power)
-
-    def toggle_servo(self):
-        if self.button_laser_status:
-            self.experiment.servo_off()
-            self.button_laser.setText("Switch ON")
-            self.button_laser_status = 0
-        else:
-            self.experiment.servo_on()
-            self.button_laser.setText("Switch OFF")
-            self.button_laser_status = 1
-
-
     def move_right(self):
         self.experiment.move_mirror(direction=1, axis=self.experiment.config['electronics']['horizontal_axis'])
 
@@ -158,26 +119,16 @@ class MicroscopeWindow(BaseView, QMainWindow):
     def move_down(self):
         self.experiment.move_mirror(direction=0, axis=self.experiment.config['electronics']['vertical_axis'])
 
-    def move_focus_plus(self):
-        self.experiment.move_mirror(direction=0, axis=3)
-
-    def move_focus_minus(self):
-        self.experiment.move_mirror(direction=1, axis=3)
-
 
     def update_image(self):
         t0 = time.perf_counter()
-        img = self.experiment.get_latest_image('camera_microscope')
+        img = self.experiment.get_latest_image()
         self.camera_viewer.update_image(img)
         t1 = time.perf_counter() - t0
         self.updating_times = np.roll(self.updating_times, 1)
         self.updating_times[0] = t1
         self.status_bar.showMessage(f'{np.mean(self.updating_times)*1000}ms')
         self.last_update = time.time()
-        cross_cut = np.sum(img, 0)
-        y = np.arange(0, len(cross_cut))
-        self.cross_cut_plot.setData(cross_cut, y[::-1])
-
 
         # if self.background_box.isChecked() and self.experiment.background is not None:
         #     t_image = self.experiment.get_latest_image('camera_microscope')

@@ -36,6 +36,7 @@ class LightSheetExperiment(Experiment):
 
         self.saving = False
         self.saving_event = Event()
+        self.saving_process=None
 
     @Action
     def initialize(self):
@@ -242,5 +243,5 @@ class LightSheetExperiment(Experiment):
         self.camera_microscope.keep_reading = False
         if self.camera_microscope is not None:
             self.camera_microscope.finalize()
-        super(CalibrationSetup, self).finalize()
+        super(LightSheetExperiment, self).finalize()
         self.finalized = True
