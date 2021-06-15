@@ -1,0 +1,61 @@
+%YAML 1.2
+---
+# Default parameters for the Light Sheet experiment
+# All parameters can be changed to accommodate user needs.
+# All parameters can be changed at runtime with the appropriate config window
+user:
+  name: Aquiles
+
+electronics:
+  arduino:
+    device: 5
+  vertical_axis: 1
+  horizontal_axis: 2
+
+mirror:
+  speed: 1
+
+info:
+  folder: "C:\\Users\\aquic\\Data"
+  cartridge_number: LS_2021_
+  description: "Light sheet measurements"
+  filename_microscope: Light_sheet_{cartridge_number}_{i}.npy
+  filename_movie: Light_sheet_movie_{cartridge_number}_{i}.h5
+
+saving:
+  auto_save: False
+  auto_save_waterfall: True
+  directory:  C:\\Users\\aquic\\Data
+  filename_video: Video # Can be the same filename for video and photo
+  filename_photo: Snap
+  filename_tracks: Tracks
+  filename_waterfall: Waterfall
+  filename_trajectory: Trajectory
+  filename_log: Log
+  max_memory: 500 # In megabytes
+
+GUI:
+  length_waterfall: 20 # Total length of the Waterfall (lines)
+  refresh_time: 50 # Refresh rate of the GUI (in ms)
+
+camera_microscope:
+  model: basler # Should be a python file in model/cameras
+  init: a2A1920 # Initial arguments to pass when creating the camera
+  #extra_args: [extra, arguments] # Extra arguments that can be passed when constructing the model
+  model_camera: ACE # To keep a registry of which camera was used in the experiment
+  config:
+    exposure: 5000us # Initial exposure time (in ms)
+    gain: 0.
+    ROI: [[1, 1920], [1, 1200]]
+    pixel_format: Mono12
+    auto_exposure: Off
+    auto_gain: Off
+    buffer_size: 200MB
+
+movie:
+  buffer_length: 1000 # Frames
+
+debug:
+  logging_level: Nothing # One of Nothing, Debug, Info, Warning, Error
+  queue_memory: False
+  to_screen: True
