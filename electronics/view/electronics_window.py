@@ -31,16 +31,16 @@ class ElectronicsWindow(QMainWindow):
 
     def move_right(self):
         speed = int(self.mirror_speed.text())
-        self.experiment.move_mirror(speed=speed, direction=1, axis=1)
+        self.experiment.move_piezo(speed=speed, direction=1, axis=1)
 
     def move_left(self):
         speed = int(self.mirror_speed.text())
-        self.experiment.move_mirror(speed=speed, direction=0, axis=1)
+        self.experiment.move_piezo(speed=speed, direction=0, axis=1)
 
     def move_up(self):
         speed = int(self.mirror_speed.text())
-        self.experiment.move_mirror(speed=speed, direction=1, axis=2)
+        self.experiment.move_piezo(speed=speed, direction=1, axis=2)
 
     def move_down(self):
         speed = int(self.mirror_speed.text())
-        self.experiment.move_mirror(speed=speed, direction=0, axis=2)
+        self.experiment.move_piezo(speed=speed, direction=0, axis=2)

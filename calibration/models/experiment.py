@@ -211,7 +211,7 @@ class CalibrationSetup(Experiment):
         :param axis: 1 or 2, to select the axis
         """
         speed = self.config['mirror']['speed']
-        self.electronics.move_mirror(speed, direction, axis)
+        self.electronics.move_piezo(speed, direction, axis)
 
     def get_latest_image(self, camera: str):
         """ Reads the camera.

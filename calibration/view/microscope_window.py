@@ -149,22 +149,22 @@ class MicroscopeWindow(BaseView, QMainWindow):
 
 
     def move_right(self):
-        self.experiment.move_mirror(direction=1, axis=self.experiment.config['electronics']['horizontal_axis'])
+        self.experiment.move_piezo(direction=1, axis=self.experiment.config['electronics']['horizontal_axis'])
 
     def move_left(self):
-        self.experiment.move_mirror(direction=0, axis=self.experiment.config['electronics']['horizontal_axis'])
+        self.experiment.move_piezo(direction=0, axis=self.experiment.config['electronics']['horizontal_axis'])
 
     def move_up(self):
-        self.experiment.move_mirror(direction=1, axis=self.experiment.config['electronics']['vertical_axis'])
+        self.experiment.move_piezo(direction=1, axis=self.experiment.config['electronics']['vertical_axis'])
 
     def move_down(self):
-        self.experiment.move_mirror(direction=0, axis=self.experiment.config['electronics']['vertical_axis'])
+        self.experiment.move_piezo(direction=0, axis=self.experiment.config['electronics']['vertical_axis'])
 
     def move_focus_plus(self):
-        self.experiment.move_mirror(direction=0, axis=3)
+        self.experiment.move_piezo(direction=0, axis=3)
 
     def move_focus_minus(self):
-        self.experiment.move_mirror(direction=1, axis=3)
+        self.experiment.move_piezo(direction=1, axis=3)
 
 
     def update_image(self):

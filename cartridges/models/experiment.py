@@ -26,7 +26,7 @@ class Cartridges(Experiment):
 
     def move_mirror(self, speed: int, direction: int, axis: int):
         self.logger.info(f'Moving mirror: speed:{speed}, direction:{direction}, axis:{axis}')
-        self.arduino.move_mirror(speed, direction, axis)
+        self.arduino.move_piezo(speed, direction, axis)
 
     def set_servo(self, position: int):
         self.logger.info(f'Moving servo to {position}')

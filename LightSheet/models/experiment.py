@@ -2,7 +2,7 @@
 #  Copyright (c) 2021 Aquiles Carattino, Dispertech B.V.                       #
 #  experiment.py is part of disperscripts                                      #
 #  This file is released under an MIT license.                                 #
-#  See LICENSE.MD for more information.                                        #
+#  See LICENSE.md.MD for more information.                                        #
 # ##############################################################################
 
 
@@ -71,7 +71,7 @@ class LightSheetExperiment(Experiment):
         :param axis: 1 or 2, to select the axis
         """
         speed = self.config['mirror']['speed']
-        self.electronics.move_mirror(speed, direction, axis)
+        self.electronics.move_piezo(speed, direction, axis)
 
     def get_latest_image(self):
         """ Reads the camera.

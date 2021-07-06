@@ -45,4 +45,4 @@ class ControlArduino(Experiment):
             self.servo = 1
 
     def move_mirror(self, speed, direction, axis):
-        self.electronics.move_mirror(speed, direction, axis)
+        self.electronics.move_piezo(speed, direction, axis)

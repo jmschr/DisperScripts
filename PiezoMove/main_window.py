@@ -25,24 +25,24 @@ class PiezoMoveWindow(QMainWindow):
 
     def move_up(self):
         speed = int(self.line_speed.text())
-        self.arduino.move_mirror(speed, 0, 1)
+        self.arduino.move_piezo(speed, 0, 1)
 
     def move_down(self):
         speed = int(self.line_speed.text())
-        self.arduino.move_mirror(speed, 1, 1)
+        self.arduino.move_piezo(speed, 1, 1)
 
     def move_left(self):
         speed = int(self.line_speed.text())
-        self.arduino.move_mirror(speed, 0, 2)
+        self.arduino.move_piezo(speed, 0, 2)
 
     def move_right(self):
         speed = int(self.line_speed.text())
-        self.arduino.move_mirror(speed, 1, 2)
+        self.arduino.move_piezo(speed, 1, 2)
 
     def move_plus(self):
         speed = int(self.line_speed.text())
-        self.arduino.move_mirror(speed, 0, 3)
+        self.arduino.move_piezo(speed, 0, 3)
 
     def move_minus(self):
         speed = int(self.line_speed.text())
-        self.arduino.move_mirror(speed, 1, 3)
+        self.arduino.move_piezo(speed, 1, 3)
