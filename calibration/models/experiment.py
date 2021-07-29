@@ -204,7 +204,7 @@ class CalibrationSetup(Experiment):
         self.electronics.laser_power = power
         self.config['laser']['power'] = power
 
-    def move_mirror(self, direction: int, axis: int):
+    def move_piezo(self, direction: int, axis: int):
         """ Moves the mirror connected to the board
 
         :param direction: 0 or 1, depending on which direction to move the mirror
