@@ -35,14 +35,14 @@ centroid:
 saving:
   auto_save: False
   auto_save_waterfall: True
-  directory:  C:\\Users\\aquic\\Data
+  directory:  C:\\Users\\Aquiles\\Data
   filename_video: Video # Can be the same filename for video and photo
   filename_photo: Snap
   filename_tracks: Tracks
   filename_waterfall: Waterfall
   filename_trajectory: Trajectory
   filename_log: Log
-  max_memory: 500 # In megabytes
+  max_memory: 150 # In megabytes
 
 GUI:
   length_waterfall: 20 # Total length of the Waterfall (lines)
@@ -75,7 +75,7 @@ camera_microscope:
     pixel_format: Mono12
     auto_exposure: Off
     auto_gain: Off
-    buffer_size: 1000MB
+    buffer_size: 2000MB
 
 movie:
   buffer_length: 5000 # Frames
