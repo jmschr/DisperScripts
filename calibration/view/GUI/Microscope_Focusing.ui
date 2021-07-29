@@ -310,6 +310,9 @@
         <widget class="QLineEdit" name="camera_gain_line"/>
        </item>
        <item>
+        <widget class="FileSelector" name="widget_4" native="true"/>
+       </item>
+       <item>
         <widget class="QWidget" name="widget_2" native="true">
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
@@ -479,6 +482,14 @@
    </property>
   </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>FileSelector</class>
+   <extends>QWidget</extends>
+   <header location="global">experimentor/views/components</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
