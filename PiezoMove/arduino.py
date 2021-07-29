@@ -67,7 +67,7 @@ class ArduinoModel(ModelDevice):
                     pass
 
     # @make_async_thread
-    def move_mirror(self, speed: int, direction: int, axis: int):
+    def move_piezo(self, speed: int, direction: int, axis: int):
         """ Moves the mirror connected to the board
 
         :param int speed: Speed, from 0 to 2^6.
