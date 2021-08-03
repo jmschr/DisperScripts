@@ -500,8 +500,6 @@ class CalibrationSetup(Experiment):
             self.logger.debug('Finalizing the saving images')
             self.stop_saving_images()
         self.saving_event.set()
-        self.camera_fiber.keep_reading = False
-        self.camera_microscope.keep_reading = False
         if self.camera_fiber is not None:
             self.camera_fiber.finalize()
         if self.camera_microscope is not None:
