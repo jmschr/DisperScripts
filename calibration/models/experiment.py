@@ -175,7 +175,17 @@ class CalibrationSetup(Experiment):
 
     @Action
     def toggle_fiber_led(self):
-        self.electronics.fiber_led = 0 if self.electronics.fiber_led else 1
+        if self.electronics.fiber_led == 0:
+            config = self.config['laser_focusing']['high']
+            self.electronics.fiber_led = 1
+        else:
+            config = self.config['laser_focusing']['low']
+            self.electronics.fiber_led = 0
+        self.camera_fiber.config.update({
+            'exposure': Q_(config['exposure_time']),
+            'gain': float(config['gain']),
+            })
+        self.camera_fiber.config.apply_all()
 
     @Action
     def servo_on(self):

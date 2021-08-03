@@ -16,18 +16,8 @@ from experimentor.views.camera.camera_viewer_widget import CameraViewerWidget
 logger = get_logger(__name__)
 
 
-
-
 class FiberWindow(BaseView, QMainWindow):
     def __init__(self, experiment):
-        # m lines of code upto next #m will be removed since the new code in the mouse_clicked make this variable Unnecessary
-        # multiply_array_imported is a variable that ensures that the multiply array is only imported once
-        # (from the file where it is saved)
-        multiply_array_imported = 0
-        # After being imported (see mouse_clicked), the value is changed to 1.
-        #m
-
-
         super(FiberWindow, self).__init__()
         uic.loadUi(os.path.join(BASE_DIR_VIEW, 'GUI', 'Fiber_End_Window.ui'), self)
 
@@ -67,6 +57,13 @@ class FiberWindow(BaseView, QMainWindow):
         self.update_centers_timer.start(150)
 
         self.updating_times = np.zeros(10)
+
+        self.button_left.clicked.connect(self.move_left)
+        self.button_right.clicked.connect(self.move_right)
+        self.button_up.clicked.connect(self.move_up)
+        self.button_down.clicked.connect(self.move_down)
+        self.button_focus_minus.clicked.connect(self.move_focus_minus)
+        self.button_focus_plus.clicked.connect(self.move_focus_plus)
 
     def update_centers(self):
         if self.laser_track.isChecked():
@@ -128,6 +125,24 @@ class FiberWindow(BaseView, QMainWindow):
 
         #The red X is shown in the figure at the fiber core location
         self.add_fiber_center_mark()
+
+    def move_right(self):
+        self.experiment.move_piezo(direction=1, axis=self.experiment.config['electronics']['horizontal_axis'])
+
+    def move_left(self):
+        self.experiment.move_piezo(direction=0, axis=self.experiment.config['electronics']['horizontal_axis'])
+
+    def move_up(self):
+        self.experiment.move_piezo(direction=1, axis=self.experiment.config['electronics']['vertical_axis'])
+
+    def move_down(self):
+        self.experiment.move_piezo(direction=0, axis=self.experiment.config['electronics']['vertical_axis'])
+
+    def move_focus_plus(self):
+        self.experiment.move_piezo(direction=0, axis=3)
+
+    def move_focus_minus(self):
+        self.experiment.move_piezo(direction=1, axis=3)
 
     def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
         logger.info('Fiber Window Closed')
