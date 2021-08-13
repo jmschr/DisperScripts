@@ -19,7 +19,7 @@ mirror:
   speed: 1
 
 info:
-  folder: "C:\\Users\\aquic\\Data"
+  folder: "C:\\Users\\Aquiles\\Data"
   cartridge_number: 2001001
   description: "Diffusion Movie"
   filename_fiber: fiber_end_{cartridge_number}_{i}.npy
