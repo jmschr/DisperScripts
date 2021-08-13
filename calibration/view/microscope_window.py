@@ -147,7 +147,6 @@ class MicroscopeWindow(BaseView, QMainWindow):
             self.button_laser.setText("Switch OFF")
             self.button_laser_status = 1
 
-
     def move_right(self):
         self.experiment.move_piezo(direction=1, axis=self.experiment.config['electronics']['horizontal_axis'])
 

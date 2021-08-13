@@ -74,7 +74,7 @@
           </size>
          </property>
          <property name="title">
-          <string>Motor</string>
+          <string>Piezo</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout">
           <property name="spacing">

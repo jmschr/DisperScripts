@@ -113,16 +113,16 @@ sample:
 
 laser_focusing:
   high:
-    exposure_time: 50ms
-    gain: 18.
+    exposure_time: 100ms
+    gain: 10.
   low:
-    exposure_time: .01ms
+    exposure_time: 10us
     gain: 0.
 
 microscope_focusing:
   high:
-    exposure_time: 100ms
-    gain: 24.
+    exposure_time: 50ms
+    gain: 40.
   low:
-    exposure_time: 1ms
+    exposure_time: 50ms
     gain: 0.
