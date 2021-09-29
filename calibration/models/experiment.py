@@ -52,7 +52,6 @@ class CalibrationSetup(Experiment):
         self.camera_microscope.continuous_reads()
         self.camera_fiber.start_free_run()
         self.camera_fiber.continuous_reads()
-        self.servo_off()
 
         time.sleep(1)  #m Without the sleep below initialize_multiply_array does not work
 
@@ -161,8 +160,10 @@ class CalibrationSetup(Experiment):
             self.logger.debug(f'Configuring {cam}')
 
     def initialize_electronics(self):
-        """Assumes there are two arduinos connected, one to control a Servo and another to control the rest.
-        TODO:: This will change in the future, when electronics are made on a single board.
+        """ Initializes the electronics associated witht he experiment (but not the cameras).
+
+        TODO:: We should be mindful about what happens once the program starts and what happens once the device is
+            switched on.
         """
 
         self.electronics = ArduinoModel(**self.config['electronics']['arduino'])
@@ -187,29 +188,11 @@ class CalibrationSetup(Experiment):
             })
         self.camera_fiber.config.apply_all()
 
-    @Action
-    def servo_on(self):
-        """Moves the servo to the ON position."""
-        self.logger.info('Setting servo ON')
-        self.electronics.move_servo(1)
-        self.config['servo']['status'] = 1
-
-    @Action
-    def servo_off(self):
-        """Moves the servo to the OFF position."""
-        self.logger.info('Setting servo OFF')
-        self.electronics.move_servo(0)
-        self.config['servo']['status'] = 0
-
     def set_laser_power(self, power: int):
         """ Sets the laser power, taking into account closing the shutter if the power is 0
         """
         self.logger.info(f'Setting laser power to {power}')
         power = int(power)
-        if power <= 1:
-            self.electronics.servo = 0
-        else:
-            self.electronics.servo = 1
 
         self.electronics.laser_power = power
         self.config['laser']['power'] = power
@@ -426,7 +409,6 @@ class CalibrationSetup(Experiment):
         self.fiber_center_position = self.calculate_gaussian_centroid(image, x, y, crop_size)
         return [x,y] #m
 
-
     def set_roi(self, y_min, height):
         """ Sets up the ROI of the microscope camera. It assumes the user only crops the vertical direction, since the
         fiber goes all across the image.
@@ -509,8 +491,6 @@ class CalibrationSetup(Experiment):
         super(CalibrationSetup, self).finalize()
         self.finalized = True
 
-
-
     def creating_multiply_array(self,width, height, power=5):
         # function added by Matthijs (function to create multiply array)
         #This function is not used right now, and will most likely not be used in the future, so it will probably be
@@ -550,7 +530,6 @@ class CalibrationSetup(Experiment):
         difference between the high and low values '''
         multiply_array = multiply_array ** power
         return multiply_array
-
 
     def creating_multiply_array_2(self,width, height, power=2.5):
         # Function added by Matthijs, (this is an improved version of 'creating_multiply_array'), this fucntain is
@@ -593,7 +572,6 @@ class CalibrationSetup(Experiment):
         difference between the high and low values '''
         multiply_array = multiply_array ** power
         return multiply_array
-
 
     def import_or_create_and_save_multiply_array(self, width, height):
         # Function (added by Matthijs) that checks whether the multiply array is stored in a file, and is the prooper
