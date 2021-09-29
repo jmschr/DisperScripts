@@ -44,7 +44,7 @@ class CalibrationSetup(Experiment):
         """ Initialize both cameras and the electronics. Cameras will start with a continuous run and continuous
         acquisition, based on the initial configuration.
         """
-        self.initilize_multiply_array()  # m
+        # self.initilize_multiply_array()  # m
         self.initialize_cameras()
         self.initialize_electronics()
         self.logger.info('Starting free runs and continuous reads')
