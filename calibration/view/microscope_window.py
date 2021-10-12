@@ -21,7 +21,6 @@ class MicroscopeWindow(BaseView, QMainWindow):
     def __init__(self, experiment):
         super().__init__()
         self.experiment = experiment
-        self.button_laser_status = 0
 
         filename = os.path.join(BASE_DIR_VIEW, 'GUI', 'Microscope_Focusing.ui')
         uic.loadUi(filename, self)
@@ -45,7 +44,6 @@ class MicroscopeWindow(BaseView, QMainWindow):
         self.connect_to_action(self.start_binning_button.clicked,self.experiment.start_binning)
         self.connect_to_action(self.stop_binning_button.clicked,self.experiment.stop_binning)
 
-        self.button_laser.clicked.connect(self.toggle_servo)
         self.power_slider.valueChanged.connect(self.update_laser)
 
         self.button_left.clicked.connect(self.move_left)
@@ -124,28 +122,8 @@ class MicroscopeWindow(BaseView, QMainWindow):
 
     def update_laser(self, power):
         power = int(power)
-        # Open the servo if increasing the power
-        if power > 0:
-            self.experiment.servo_on()
-            self.button_laser.setText('Switch OFF')
-            self.button_laser_status = 1
-        else:
-            self.experiment.servo_off()
-            self.button_laser.setText('Switch ON')
-            self.button_laser_status = 0
-
         self.lcd_laser_power.display(power)
         self.experiment.set_laser_power(power)
-
-    def toggle_servo(self):
-        if self.button_laser_status:
-            self.experiment.servo_off()
-            self.button_laser.setText("Switch ON")
-            self.button_laser_status = 0
-        else:
-            self.experiment.servo_on()
-            self.button_laser.setText("Switch OFF")
-            self.button_laser_status = 1
 
     def move_right(self):
         self.experiment.move_piezo(direction=1, axis=self.experiment.config['electronics']['horizontal_axis'])

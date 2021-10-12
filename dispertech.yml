@@ -11,6 +11,7 @@ electronics:
     device: 0
   vertical_axis: 1
   horizontal_axis: 2
+  focus_axis: 3
 
 laser:
   power: 0

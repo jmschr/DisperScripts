@@ -194,7 +194,7 @@ class CalibrationSetup(Experiment):
         self.logger.info(f'Setting laser power to {power}')
         power = int(power)
 
-        self.electronics.laser_power = power
+        self.electronics.scattering_laser = power
         self.config['laser']['power'] = power
 
     def move_piezo(self, direction: int, axis: int):
