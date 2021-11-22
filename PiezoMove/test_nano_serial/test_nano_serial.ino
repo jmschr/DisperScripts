@@ -39,12 +39,13 @@ int piezo_delay = 100; // delay before stopping the movement of the piezo in mil
 void setup()
 {
   // Open serial communications and wait for port to open:
-  Serial.begin(19200);
-  Serial.flush();
+  Serial.begin(115200);
+  
   while (!Serial) {
     ; // wait for serial port to connect. Needed for Native USB only
   }
-
+  Serial.flush();
+  
   // set the data rate for the SoftwareSerial port
   mySerial.begin(19200);
   mySerial.flush();
