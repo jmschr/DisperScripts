@@ -8,7 +8,8 @@ user:
 
 electronics:
   arduino:
-    device: 0
+    port: 'ASRL5::INSTR'
+    baud_rate: 115200
   vertical_axis: 1
   horizontal_axis: 2
   focus_axis: 3

@@ -17,7 +17,8 @@ if len(sys.argv) > 1:
 
 print(f'Using piezo device {device}')
 
-arduino = ArduinoModel(device=device)
+
+arduino = ArduinoModel(port='ASRL5::INSTR')
 arduino.initialize()
 
 app = QApplication([])

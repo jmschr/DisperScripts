@@ -54,9 +54,12 @@ class ArduinoModel(ModelDevice):
         """
         with self.query_lock:
             if not self.port:
-                port = Arduino.list_devices()[self.device]
-            self.driver = rm.open_resource(port, baud_rate=115200)
-            sleep(2)
+                self.port = Arduino.list_devices()[self.device]
+            self.driver = rm.open_resource(self.port)
+
+            sleep(1)
+            self.driver.baud_rate = 115200
+            self.driver.timeout = 2500
             # This is very silly, but clears the buffer so that next messages are not broken
             try:
                 self.driver.query("IDN")
@@ -70,18 +73,26 @@ class ArduinoModel(ModelDevice):
     def move_piezo(self, speed: int, direction: int, axis: int):
         """ Moves the mirror connected to the board
 
-        :param int speed: Speed, from 0 to 2^6.
+        :param int speed: Speed, from 0 to 2^6-1.
         :param direction: 0 or 1, depending on which direction to move the mirror
         :param axis: 1 or 2, to select the axis
         """
+
         with self.query_lock:
+            print('Speed: ', speed)
+            print('Direction: ', direction)
+            print('Axis: ', axis)
             binary_speed = '{0:06b}'.format(speed)
             binary_speed = str(direction) + str(1) + binary_speed
+            print('Binary speed: ', binary_speed)
             number = int(binary_speed, 2)
             bytestring = number.to_bytes(1, 'big')
-            self.driver.query(f"mot{axis}")
+            print('{0:b}'.format(number))
+            print(self.driver.query(f"mot{axis}"))
             self.driver.write_raw(bytestring)
             ans = self.driver.read()
+            print("{0:b}".format(int(ans)))
+        print('Finished moving')
         self.logger.info('Finished moving')
 
 
