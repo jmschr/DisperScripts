@@ -172,7 +172,11 @@ class CalibrationSetup(Experiment):
 
     @Action
     def toggle_top_led(self):
-        self.electronics.top_led = 0 if self.electronics.top_led else 1
+        if self.electronics.top_led == 1:
+            self.electronics.top_led = 0
+        else:
+            self.electronics.top_led = 1
+
 
     @Action
     def toggle_fiber_led(self):
