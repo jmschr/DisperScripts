@@ -28,10 +28,10 @@ class ControlArduino(Experiment):
         self.electronics.power_led = 0 if self.electronics.power_led else 1
 
     def toggle_laser_led(self):
-        self.electronics.laser_led = 0 if self.electronics.laser_led else 1
+        self.electronics.processing_led = 0 if self.electronics.processing_led else 1
 
     def toggle_measure_led(self):
-        self.electronics.measure_led = 0 if self.electronics.measure_led else 1
+        self.electronics.initialising_led = 0 if self.electronics.initialising_led else 1
 
     def laser_power(self, power):
         self.electronics.laser_power = power
