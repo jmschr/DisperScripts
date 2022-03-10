@@ -10,9 +10,16 @@ electronics:
   arduino:
     port: 'ASRL5::INSTR'
     baud_rate: 115200
-  vertical_axis: 1
-  horizontal_axis: 2
+  vertical_axis: 2
+  horizontal_axis: 1
   focus_axis: 3
+  led_side: 0
+  led_top: 1
+  led_fiber: 2
+  led_power: 3
+  led_processing: 4
+  led_initialising: 5
+  led_ready: 6
 
 laser:
   power: 0
