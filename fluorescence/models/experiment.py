@@ -6,6 +6,7 @@ import numpy as np
 import copy as copy #m required in Code1dot7for_implementation
 
 from calibration.models.movie_saver import MovieSaver
+from experimentor.drivers.digilent import AnalogDiscovery
 from .arduino import ArduinoModel
 from experimentor import Q_
 from experimentor.core.signal import Signal
@@ -29,6 +30,8 @@ class CalibrationSetup(Experiment):
 
         self.electronics = None
 
+        self.daq = None
+
         self.fiber_center_position = None
         self.fiber_radius = 0
         self.laser_center = None
@@ -47,6 +50,7 @@ class CalibrationSetup(Experiment):
         # self.initilize_multiply_array()  # m
         self.initialize_cameras()
         self.initialize_electronics()
+        self.initialize_daq()
         self.logger.info('Starting free runs and continuous reads')
         self.camera_microscope.start_free_run()
         self.camera_microscope.continuous_reads()
@@ -54,6 +58,7 @@ class CalibrationSetup(Experiment):
         self.camera_fiber.continuous_reads()
 
         time.sleep(1)  #m Without the sleep below initialize_multiply_array does not work
+
 
 
     @Action
@@ -169,6 +174,13 @@ class CalibrationSetup(Experiment):
         self.electronics = ArduinoModel(**self.config['electronics']['arduino'])
         self.logger.info('Initializing electronics arduino')
         self.electronics.initialize()
+
+    def initialize_daq(self):
+        """ Initializes the Digilent DAQ Card to acquire the signal from the APD"""
+        self.daq = AnalogDiscovery()
+        self.daq.initialize()
+        
+    def read_daq(self):
 
     @Action
     def toggle_top_led(self):
