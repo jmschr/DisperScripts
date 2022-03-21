@@ -7,6 +7,8 @@ import copy as copy #m required in Code1dot7for_implementation
 
 from calibration.models.movie_saver import MovieSaver
 from experimentor.drivers.digilent import AnalogDiscovery
+from experimentor.drivers.digilent.dwfconst import InstrumentState, AnalogAcquisitionFilter, TriggerSource, \
+    AnalogInTriggerMode, TriggerCondition
 from .arduino import ArduinoModel
 from experimentor import Q_
 from experimentor.core.signal import Signal
@@ -18,11 +20,11 @@ from experimentor.models.experiments import Experiment
 import time
 
 
-class CalibrationSetup(Experiment):
+class FluorescenceMeasurement(Experiment):
     new_image = Signal()
 
     def __init__(self, filename=None):
-        super(CalibrationSetup, self).__init__(filename=filename)
+        super(FluorescenceMeasurement, self).__init__(filename=filename)
 
         self.background = None
         self.camera_microscope = None
@@ -41,6 +43,7 @@ class CalibrationSetup(Experiment):
         self.saving_process = None
         self.remove_background = False
         self.multiply_array = False #m
+        self.last_daq = np.zeros((100))
 
     @Action
     def initialize(self):
@@ -50,15 +53,13 @@ class CalibrationSetup(Experiment):
         # self.initilize_multiply_array()  # m
         self.initialize_cameras()
         self.initialize_electronics()
-        self.initialize_daq()
         self.logger.info('Starting free runs and continuous reads')
         self.camera_microscope.start_free_run()
         self.camera_microscope.continuous_reads()
         self.camera_fiber.start_free_run()
         self.camera_fiber.continuous_reads()
-
-        time.sleep(1)  #m Without the sleep below initialize_multiply_array does not work
-
+        self.initialize_daq()
+        self.last_daq = np.zeros((self.config['daq']['buffer']))
 
 
     @Action
@@ -177,10 +178,40 @@ class CalibrationSetup(Experiment):
 
     def initialize_daq(self):
         """ Initializes the Digilent DAQ Card to acquire the signal from the APD"""
+        self.logger.info('Initializing DAQ')
         self.daq = AnalogDiscovery()
         self.daq.initialize()
-        
+        self.reconfigure_daq()
+
+    def reconfigure_daq(self):
+        self.daq.analog_in_configure(reconfigure=True, start=True)
+        self.daq.analog_in_channel_enable(self.config['daq']['channel_in'])
+        self.daq.analog_in_channel_offset_set(self.config['daq']['channel_in'], 0)
+        self.daq.analog_in_channel_range_set(self.config['daq']['channel_in'], 5)
+        self.daq.analog_in_buffer_size_set(self.config['daq']['buffer'])
+        self.daq.analog_in_frequency_set(self.config['daq']['frequency'])
+        self.daq.analog_in_channel_filter_set(self.config['daq']['channel_in'], AnalogAcquisitionFilter.filterDecimate)
+        if self.config['daq']['trigger'] == 'none':
+            self.daq.analog_in_trigger_source_set(TriggerSource.none)
+        elif self.config['daq']['trigger'] == 'analog':
+            self.daq.analog_in_trigger_source_set(TriggerSource.DetectorAnalogIn)
+            self.daq.analog_in_trigger_channel_set(self.config['daq']['channel_trigger'])
+            self.daq.analog_in_trigger_type_set(AnalogInTriggerMode.trigtypeEdge)
+            self.daq.analog_in_trigger_level_set(self.config['daq']['trigger_level'])
+            self.daq.analog_in_trigger_condition_set(TriggerCondition.trigcondRisingPositive)
+        self.daq.analog_in_configure(reconfigure=False, start=True)
+        status = self.daq.analog_in_status(read_data=False)
+        self.logger.info(f'Reconfigured DAQ. Status: {status}')
+
     def read_daq(self):
+        """Reds the daq and stores the data in self.last_daq"""
+        status = self.daq.analog_in_status(read_data=True)
+
+        if status == InstrumentState.Done:
+            data = self.daq.analog_in_status_data(self.config['daq']['channel_in'], self.config['daq']['buffer'])
+            self.last_daq = data
+        else:
+            self.logger.debug('Reading from DAQ faster than its acquisition time')
 
     @Action
     def toggle_top_led(self):
@@ -513,8 +544,9 @@ class CalibrationSetup(Experiment):
             self.camera_microscope.finalize()
         self.set_laser_power_633(0)
         self.set_laser_power_488(0)
+        self.daq.close()
 
-        super(CalibrationSetup, self).finalize()
+        super(FluorescenceMeasurement, self).finalize()
         self.finalized = True
 
     def creating_multiply_array(self,width, height, power=5):

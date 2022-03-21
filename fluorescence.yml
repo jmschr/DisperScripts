@@ -6,6 +6,14 @@
 user:
   name: Aquiles
 
+daq:
+  channel_in: 0
+  channel_trigger: 1
+  frequency: 20000000
+  buffer: 8192
+  trigger: none # Either none or analog
+  trigger_level: 0.5 # Does not have effect if trigger is none
+
 electronics:
   arduino:
     port: 'ASRL4::INSTR'

@@ -22,7 +22,8 @@ import time
 import yaml
 from PyQt5.QtWidgets import QApplication
 
-from fluorescence.models.experiment import CalibrationSetup
+from fluorescence.models.experiment import FluorescenceMeasurement
+from fluorescence.view.digilent_window import DAQWindow
 from fluorescence.view.fiber_window import FiberWindow
 from fluorescence.view.microscope_window import MicroscopeWindow
 from experimentor.lib.log import log_to_screen, get_logger
@@ -30,16 +31,18 @@ from experimentor.lib.log import log_to_screen, get_logger
 if __name__ == "__main__":
     logger = get_logger()
     handler = log_to_screen(logger=logger)
-    experiment = CalibrationSetup()
+    experiment = FluorescenceMeasurement()
     experiment.load_configuration('fluorescence.yml', yaml.UnsafeLoader)
     executor = experiment.initialize()
     while executor.running():
         time.sleep(.1)
 
     app = QApplication([])
-    microscope_window = MicroscopeWindow(experiment)
-    microscope_window.show()
-    fiber_window = FiberWindow(experiment)
-    fiber_window.show()
+    # microscope_window = MicroscopeWindow(experiment)
+    # microscope_window.show()
+    # fiber_window = FiberWindow(experiment)
+    # fiber_window.show()
+    daq_window = DAQWindow(experiment)
+    daq_window.show()
     app.exec()
     experiment.finalize()

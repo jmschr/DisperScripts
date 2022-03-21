@@ -1714,6 +1714,22 @@ ColorButton::disabled {
     <string>Right</string>
    </property>
   </action>
+  <action name="actionOpen_Fiber_Window">
+   <property name="text">
+    <string>Open Fiber Window</string>
+   </property>
+   <property name="toolTip">
+    <string>Open the viewer for the fiber tip camera</string>
+   </property>
+  </action>
+  <action name="actionOpen_DAQ_Window">
+   <property name="text">
+    <string>Open DAQ Window</string>
+   </property>
+   <property name="toolTip">
+    <string>Open the window for the DAQ</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
