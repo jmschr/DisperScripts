@@ -148,4 +148,5 @@ class FiberWindow(BaseView, QMainWindow):
         logger.info('Fiber Window Closed')
         self.update_image_timer.stop()
         self.update_centers_timer.stop()
+        self.experiment.camera_fiber.finalize()
         super().closeEvent(a0)
