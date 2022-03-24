@@ -24,19 +24,37 @@ class DAQWindow(BaseView, QMainWindow):
 
         self.update_timer = QTimer()
         self.update_timer.timeout.connect(self.update)
+
+        self.button_start.clicked.connect(self.start_acquisition)
+        self.button_stop.clicked.connect(self.stop_acquisition)
+
+    def start_acquisition(self):
+        self.update_parameters()
+        self.experiment.daq.continuous_reads()
         self.update_timer.start(50)
 
+    def stop_acquisition(self):
+        self.experiment.daq.stop_continuous_reads()
+        self.update_timer.stop()
+
     def update(self):
-        self.experiment.read_daq()
-        self.plot.setData(self.experiment.last_daq)
+        self.plot.setData(self.experiment.daq.last_daq)
 
     def update_parameters(self):
-        self.experiment.config['daq'].update(
-            {'channel_in': self.combo_input.currentIndex(),
-            'channel_trigger': self.combo_trigger.currentIndex(),
-            'frequency': int(self.line_frequency.value()),
-            'buffer': int(self.line_buffer.value()),
-            'trigger': str(self.combo_trigger_mode.currentText()),
-            'trigger_level': float(self.line_trigger_level.value()),
-        }
-        )
+        self.experiment.daq.config.update(
+            {
+                'channel_in': self.combo_input.currentIndex(),
+                'channel_trigger': self.combo_trigger.currentIndex(),
+                'frequency': int(self.line_frequency.value()),
+                'buffer': int(self.line_buffer.value()),
+                'trigger': str(self.combo_trigger_mode.currentText()),
+                'trigger_level': float(self.line_trigger_level.value()),
+                }
+            )
+        self.experiment.daq.reconfigure_analog()
+
+    def closeEvent(self, a0):
+        self.logger.info('DAQ Window Closed')
+        self.update_timer.stop()
+        self.experiment.daq.close()
+        super().closeEvent(a0)

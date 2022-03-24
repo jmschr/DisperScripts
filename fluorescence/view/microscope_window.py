@@ -201,13 +201,5 @@ class MicroscopeWindow(BaseView, QMainWindow):
     def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
         logger.info('Microscope Window Closed')
         self.update_image_timer.stop()
+        self.experiment.camera_microscope.finalize()
         super().closeEvent(a0)
-
-if __name__ == '__main__':
-    from PyQt5.QtWidgets import QApplication
-
-    app = QApplication([])
-    win = MicroscopeWindow()
-    win.show()
-    app.exec()
-

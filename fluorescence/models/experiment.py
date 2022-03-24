@@ -19,6 +19,8 @@ from experimentor.models.devices.cameras.exceptions import CameraTimeout
 from experimentor.models.experiments import Experiment
 import time
 
+from .digilent import DigilentModel
+
 
 class FluorescenceMeasurement(Experiment):
     new_image = Signal()
@@ -43,7 +45,7 @@ class FluorescenceMeasurement(Experiment):
         self.saving_process = None
         self.remove_background = False
         self.multiply_array = False #m
-        self.last_daq = np.zeros((100))
+
 
     @Action
     def initialize(self):
@@ -179,39 +181,9 @@ class FluorescenceMeasurement(Experiment):
     def initialize_daq(self):
         """ Initializes the Digilent DAQ Card to acquire the signal from the APD"""
         self.logger.info('Initializing DAQ')
-        self.daq = AnalogDiscovery()
+        self.daq = DigilentModel(config=self.config['daq'])
         self.daq.initialize()
-        self.reconfigure_daq()
-
-    def reconfigure_daq(self):
-        self.daq.analog_in_configure(reconfigure=True, start=True)
-        self.daq.analog_in_channel_enable(self.config['daq']['channel_in'])
-        self.daq.analog_in_channel_offset_set(self.config['daq']['channel_in'], 0)
-        self.daq.analog_in_channel_range_set(self.config['daq']['channel_in'], 5)
-        self.daq.analog_in_buffer_size_set(self.config['daq']['buffer'])
-        self.daq.analog_in_frequency_set(self.config['daq']['frequency'])
-        self.daq.analog_in_channel_filter_set(self.config['daq']['channel_in'], AnalogAcquisitionFilter.filterDecimate)
-        if self.config['daq']['trigger'] == 'none':
-            self.daq.analog_in_trigger_source_set(TriggerSource.none)
-        elif self.config['daq']['trigger'] == 'analog':
-            self.daq.analog_in_trigger_source_set(TriggerSource.DetectorAnalogIn)
-            self.daq.analog_in_trigger_channel_set(self.config['daq']['channel_trigger'])
-            self.daq.analog_in_trigger_type_set(AnalogInTriggerMode.trigtypeEdge)
-            self.daq.analog_in_trigger_level_set(self.config['daq']['trigger_level'])
-            self.daq.analog_in_trigger_condition_set(TriggerCondition.trigcondRisingPositive)
-        self.daq.analog_in_configure(reconfigure=False, start=True)
-        status = self.daq.analog_in_status(read_data=False)
-        self.logger.info(f'Reconfigured DAQ. Status: {status}')
-
-    def read_daq(self):
-        """Reds the daq and stores the data in self.last_daq"""
-        status = self.daq.analog_in_status(read_data=True)
-
-        if status == InstrumentState.Done:
-            data = self.daq.analog_in_status_data(self.config['daq']['channel_in'], self.config['daq']['buffer'])
-            self.last_daq = data
-        else:
-            self.logger.debug('Reading from DAQ faster than its acquisition time')
+        self.daq.reconfigure_daq()
 
     @Action
     def toggle_top_led(self):
@@ -219,7 +191,6 @@ class FluorescenceMeasurement(Experiment):
             self.electronics.top_led = 0
         else:
             self.electronics.top_led = 1
-
 
     @Action
     def toggle_fiber_led(self):
