@@ -40,16 +40,21 @@ class DigilentModel(ModelDevice):
         """
         self.driver.analog_in_configure(reconfigure=True, start=True)
         self.driver.analog_in_channel_enable(self.config['channel_in'])
+        self.logger.info(f'Channel in: {self.config["channel_in"]}')
         self.driver.analog_in_channel_offset_set(self.config['channel_in'], 0)
         self.driver.analog_in_channel_range_set(self.config['channel_in'], 5)
         self.driver.analog_in_buffer_size_set(self.config['buffer'])
+        self.logger.info(f'Buffer: {self.config["buffer"]}')
         self.driver.analog_in_frequency_set(self.config['frequency'])
+        self.logger.info(f'Frequency: {self.config["frequency"]}')
         self.driver.analog_in_channel_filter_set(self.config['channel_in'], AnalogAcquisitionFilter.filterDecimate)
         if self.config['trigger'] == 'none':
             self.driver.analog_in_trigger_source_set(TriggerSource.none)
         elif self.config['trigger'] == 'analog':
+            self.logger.info(f'Trigger analog')
             self.driver.analog_in_trigger_source_set(TriggerSource.DetectorAnalogIn)
             self.driver.analog_in_trigger_channel_set(self.config['channel_trigger'])
+            self.logger.info(f'Channel trigger: {self.config["channel_trigger"]}')
             self.driver.analog_in_trigger_type_set(AnalogInTriggerMode.trigtypeEdge)
             self.driver.analog_in_trigger_level_set(self.config['trigger_level'])
             self.driver.analog_in_trigger_condition_set(TriggerCondition.trigcondRisingPositive)
