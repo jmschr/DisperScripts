@@ -8,21 +8,20 @@ from PyQt5.QtWidgets import QMainWindow, QFileDialog
 import pyqtgraph as pg
 from dispertech.view.GUI import resources
 
-from calibration.view import BASE_DIR_VIEW
+from fluorescence.view import BASE_DIR_VIEW
 from experimentor import Q_
 from experimentor.lib.log import get_logger
 from experimentor.views.base_view import BaseView
 from experimentor.views.camera.camera_viewer_widget import CameraViewerWidget
 
-logger = get_logger(__name__)
 
-
-class MicroscopeWindow(BaseView, QMainWindow):
+class MicroscopeWindow(QMainWindow, BaseView):
     def __init__(self, experiment):
         super().__init__()
         self.experiment = experiment
 
         filename = os.path.join(BASE_DIR_VIEW, 'GUI', 'Fluo_Microscope.ui')
+        self.logger.debug(f'Loading {filename} into microscope window')
         uic.loadUi(filename, self)
 
         self.camera_viewer = CameraViewerWidget(parent=self)
@@ -90,7 +89,7 @@ class MicroscopeWindow(BaseView, QMainWindow):
     def update_camera(self):
         """ Updates the properties of the camera. """
 
-        logger.info('Updating parameters of the camera')
+        self.logger.info('Updating parameters of the camera')
         self.experiment.camera_microscope.config.update({
             'exposure': Q_(self.camera_exposure_line.text()),
             'gain': float(self.camera_gain_line.text()),
@@ -111,7 +110,7 @@ class MicroscopeWindow(BaseView, QMainWindow):
         """ Update the parameters of the experiment, from the UI to the model. Can be triggered by the click on an
         apply button or by another signal, such as finished editing a line """
 
-        logger.info('Updating experiment parameters')
+        self.logger.info('Updating experiment parameters')
 
         self.experiment.config['info'].update({
             'cartridge_number': str(self.cartridge_line.text()),
@@ -199,7 +198,7 @@ class MicroscopeWindow(BaseView, QMainWindow):
         self.experiment.stop_saving_images()
 
     def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
-        logger.info('Microscope Window Closed')
-        self.update_image_timer.stop()
-        self.experiment.camera_microscope.finalize()
+        self.logger.info('Microscope Window Closed')
+        # self.update_image_timer.stop()
+        # self.experiment.camera_microscope.stop_free_run()
         super().closeEvent(a0)

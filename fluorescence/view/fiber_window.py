@@ -7,19 +7,21 @@ from PyQt5 import uic, QtGui
 from PyQt5.QtCore import QTimer
 from PyQt5.QtWidgets import QMainWindow, QStatusBar
 
-from calibration.view import BASE_DIR_VIEW
+from fluorescence.view import BASE_DIR_VIEW
 from experimentor import Q_
 from experimentor.lib.log import get_logger
 from experimentor.views.base_view import BaseView
 from experimentor.views.camera.camera_viewer_widget import CameraViewerWidget
 
-logger = get_logger(__name__)
 
 
-class FiberWindow(BaseView, QMainWindow):
+class FiberWindow(QMainWindow, BaseView):
     def __init__(self, experiment):
-        super(FiberWindow, self).__init__()
-        uic.loadUi(os.path.join(BASE_DIR_VIEW, 'GUI', 'Fiber_End_Window.ui'), self)
+        super().__init__()
+
+        filename = os.path.join(BASE_DIR_VIEW, 'GUI', 'Fiber_End_Window.ui')
+        self.logger.debug(f'Loading {filename} into microscope window')
+        uic.loadUi(filename, self)
 
         self.experiment = experiment
 
@@ -96,7 +98,7 @@ class FiberWindow(BaseView, QMainWindow):
     def update_camera(self):
         """ Updates the properties of the camera. """
 
-        logger.info('Updating parameters of the camera')
+        self.logger.info('Updating parameters of the camera')
         self.experiment.camera_fiber.config.update({
             'exposure': Q_(self.camera_exposure_line.text()),
             'gain': float(self.camera_gain_line.text()),
@@ -117,7 +119,7 @@ class FiberWindow(BaseView, QMainWindow):
         """ Slot which gets the mouse clicked on the image. The signal associated is an overwrite of the PyQtgraph
         default signal to get directly the coordinates of the mouse clicked in pixels of the image.
         """
-        logger.info('Calculating center of the fiber')
+        self.logger.info('Calculating center of the fiber')
 
         #m
         self.experiment.Code1dot7for_implementation(self.experiment.get_latest_image('camera_fiber'), \
@@ -145,8 +147,8 @@ class FiberWindow(BaseView, QMainWindow):
         self.experiment.move_piezo(direction=1, axis=3)
 
     def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
-        logger.info('Fiber Window Closed')
-        self.update_image_timer.stop()
-        self.update_centers_timer.stop()
-        self.experiment.camera_fiber.finalize()
+        self.logger.info('Fiber Window Closed')
+        # self.update_image_timer.stop()
+        # self.update_centers_timer.stop()
+        # self.experiment.camera_fiber.stop_free_run()
         super().closeEvent(a0)

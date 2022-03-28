@@ -96,6 +96,11 @@ camera_microscope:
     auto_exposure: Off
     auto_gain: Off
     buffer_size: 2000MB
+    DIO:
+      output1:
+        line: Line3
+        mode: Output
+        source: FrameTriggerWait
 
 movie:
   buffer_length: 5000 # Frames

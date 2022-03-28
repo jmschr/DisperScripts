@@ -27,7 +27,6 @@ class DigilentModel(ModelDevice):
         self.keep_continuous_reads = False
         self.finalized = True
 
-    @Action
     def initialize(self):
         """Initializes the communication with the Digilent board
         """
@@ -97,6 +96,9 @@ class DigilentModel(ModelDevice):
         self.keep_continuous_reads = False
         while self.continuous_reads_running:
             time.sleep(0.01)
+
+    def close(self):
+        self.driver.close()
 
     def finalize(self):
         if self.finalized:

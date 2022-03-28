@@ -219,15 +219,19 @@ class ArduinoModel(ModelDevice):
                 self.temp_sample = float(self.driver.query("TEM:1"))
             sleep(5)
 
+    @Feature
+    def idn(self):
+        """ Returns the identification string of the device.
+        """
+        return self.driver.query("IDN")
+
+
     def finalize(self):
         self.logger.info('Finalizing Arduino')
         self._stop_temperature.set()
         if self.initial_config is not None:
             self.config.update(self.initial_config)
             self.config.apply_all()
-        self.clean_up_threads()
-        if len(self._threads):
-            self.logger.warning(f'There are {len(self._threads)} still alive in Arduino')
         self.driver.close()
         super().finalize()
 

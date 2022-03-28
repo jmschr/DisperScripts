@@ -17,6 +17,7 @@ import logging
 #     while app.is_running:
 #         sleep(1)
 #     app.finalize()
+import sys
 import time
 
 import yaml
@@ -45,4 +46,8 @@ if __name__ == "__main__":
     daq_window = DAQWindow(experiment)
     daq_window.show()
     app.exec()
-    experiment.finalize()
+    try:
+        experiment.finalize()
+    except Exception as e:
+        print(e)
+    sys.exit()
