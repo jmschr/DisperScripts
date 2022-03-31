@@ -16,7 +16,7 @@ from experimentor.views.camera.camera_viewer_widget import CameraViewerWidget
 logger = get_logger(__name__)
 
 
-class FiberWindow(BaseView, QMainWindow):
+class FiberWindow(QMainWindow, BaseView):
     def __init__(self, experiment):
         super(FiberWindow, self).__init__()
         uic.loadUi(os.path.join(BASE_DIR_VIEW, 'GUI', 'Fiber_End_Window.ui'), self)

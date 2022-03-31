@@ -8,7 +8,7 @@ user:
 
 electronics:
   arduino:
-    port: 'ASRL5::INSTR'
+    port: 'ASRL7::INSTR'
     baud_rate: 115200
   vertical_axis: 2
   horizontal_axis: 1
@@ -74,7 +74,7 @@ camera_fiber:
 
 camera_microscope:
   model: basler # Should be a python file in model/cameras
-  init: acA1920 # a2A1920 Initial arguments to pass when creating the camera
+  init: a2A1920 #  acA1920 Initial arguments to pass when creating the camera
   #extra_args: [extra, arguments] # Extra arguments that can be passed when constructing the model
   model_camera: ACE # To keep a registry of which camera was used in the experiment
   config:

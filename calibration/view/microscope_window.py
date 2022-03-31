@@ -17,7 +17,7 @@ from experimentor.views.camera.camera_viewer_widget import CameraViewerWidget
 logger = get_logger(__name__)
 
 
-class MicroscopeWindow(BaseView, QMainWindow):
+class MicroscopeWindow(QMainWindow, BaseView):
     def __init__(self, experiment):
         super().__init__()
         self.experiment = experiment
